@@ -13,10 +13,10 @@ all :
 install : all
 	sudo gpio -g mode 22 out
 	sudo gpio -g write 22 0
-	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 10000 -U flash:w:$(TARGET).hex
+	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 100000 -U flash:w:$(TARGET).hex
 	sudo gpio -g write 22 1
 noreset : all
-	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 10000 -U flash:w:$(TARGET).hex
+	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 100000 -U flash:w:$(TARGET).hex
 
 fuse :
 	sudo gpio -g mode 22 out
