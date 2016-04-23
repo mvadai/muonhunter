@@ -2,17 +2,16 @@
  *
  * MuonHunter.h
  * Created: 18/08/2015 10:28:44
+ * Last modified: 23/04/2016 15:01:49
+ * 
  * Author: Mihaly Vadai
  * Website:	http://muonhunter.com
  *
- * Please refer to the technical documentation on register
- * descriptions, timer and counter accuracies.
- *
  * License: GPL v.3
- *
+ * Version: 0.2
  */
 
-volatile uint8_t SERIAL = 2;
+volatile uint8_t SERIAL = 10;
 // test mode w/o crystal #define TIMER_OVF_M 122
 #define TIMER_OVF_M 125
 // test mode w/o crystal #define TIMER_OVF_S 3906
@@ -56,6 +55,8 @@ volatile uint8_t timer_day = 0;
 volatile uint8_t gm1_sum = 0;
 volatile uint8_t gm2_sum = 0;
 volatile uint8_t muon_sum = 0;
+volatile uint32_t gm1_total = 0;
+volatile uint32_t gm2_total = 0;
 
 //timer compensation variables
 volatile uint8_t gm_LED_comp = 0;
@@ -88,3 +89,8 @@ void flash_gm1(void);
 void flash_gm2(void);
 void flash_muon(void);
 void timer_compensate(void);
+void display_time(void);
+void plateau_counter_update(void);
+void timer_update(void);
+void plateau_display_init(void);
+void rolling_display_init(void);
