@@ -719,10 +719,8 @@ void plateau_display_init(){
 	PCICR = 0x6;
 	PCMSK1 = 0xF;
 	PCMSK2 = 0xE0;
-	DDRD = 0x1F;
 	DDRC = 0x0;
 	PORTC = 0x3F;
-	PORTD = 0xE0;
 	LcdInit();
 	LcdContrast(0x41);
 	LcdClear();
@@ -753,10 +751,8 @@ void rolling_display_init(){
 	PCICR = 0x6;
 	PCMSK1 = 0xF;
 	PCMSK2 = 0xE0;
-	DDRD = 0x1F;
 	DDRC = 0x0;
 	PORTC = 0x3F;
-	PORTD = 0xE0;
 	LcdInit();
 	LcdContrast(0x41);
 	LcdClear();
