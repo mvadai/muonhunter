@@ -11,7 +11,7 @@
  * Version: 0.2
  */
 
-volatile uint8_t SERIAL = 10;
+volatile uint8_t SERIAL = 19;
 // test mode w/o crystal #define TIMER_OVF_M 122
 #define TIMER_OVF_M 125
 // test mode w/o crystal #define TIMER_OVF_S 3906
