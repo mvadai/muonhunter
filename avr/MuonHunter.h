@@ -11,7 +11,7 @@
  * Version: 0.2
  */
 
-volatile uint8_t SERIAL = 10;
+volatile uint8_t SERIAL = 19;
 // test mode w/o crystal #define TIMER_OVF_M 122
 #define TIMER_OVF_M 125
 // test mode w/o crystal #define TIMER_OVF_S 3906
@@ -44,7 +44,6 @@ volatile uint8_t SERIAL = 10;
 volatile uint8_t state = DEFAULT_STATE;
 volatile uint8_t modes = DEFAULT_MODE;
 volatile char str[7];
-volatile char firmware[4] = "v0.3";
 
 // core timers and sums
 volatile uint16_t timer_time = 0;
