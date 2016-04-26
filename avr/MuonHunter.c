@@ -2,7 +2,7 @@
  *
  * MuonHunter.c
  * Created: 18/08/2015 10:28:44
- * Last modified: 23/04/2016 15:01:43
+ * Last modified: 26/04/2016 15:01:43
  * 
  * Author: Mihaly Vadai
  * Website:	http://muonhunter.com
@@ -18,7 +18,6 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <stdio.h>
-#include "TWI_Master.c"
 #include "pcd8544.c"
 #include "image.h"
 #include "MuonHunter.h"
