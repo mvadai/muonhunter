@@ -7,8 +7,7 @@ Software for the Muon Hunter project
 
 ### 0.1
 - GM & Muon rolling averages implented.
-- LCD display using the pcd8544 code by Sylvain Bissonette,
-Louis Frigon & Fandi Gunawan
+- LCD display
 - Buzzer and LED features.
 
 ### 0.2 
@@ -52,3 +51,9 @@ TODO: LED flash problem fix.
 
 ### 0.4 (planned) 
 - Pressure and temperature display.
+
+### Credits
+- Sylvain Bissonette, Louis Frigon & Fandi Gunawan for the pcd8544 LCD driver code
+- g4lvanix - eliaselectronics.com for the I2C slave library - this code
+is modified from the original
+ 
