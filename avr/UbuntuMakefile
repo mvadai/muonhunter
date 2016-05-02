@@ -1,3 +1,6 @@
+# Delete the other Makefile and rename this file to Makefile 
+# when using the USBASP programmer on Ubuntu 
+# see http://www.muonhunter.com/blog/using-usbasp-to-program-the-muon-hunter
 MCU=atmega168
 AVRDUDEMCU=m168
 CC=/usr/bin/avr-gcc
