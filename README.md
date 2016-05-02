@@ -4,14 +4,17 @@ Software for the Muon Hunter project
 ### Licence: GPL v.3
 
 ## AVR firmware version history:
+
 ### 0.1
 - GM & Muon rolling averages implented.
 - LCD display using the pcd8544 code by Sylvain Bissonette,
 Louis Frigon & Fandi Gunawan
 - Buzzer and LED features.
+
 ### 0.2 
 - GM totals / GM plateauing capability added.
 - Lightbug fixed.
+
 ### 0.3a - unstable: no python datalogging code for this yet
 - I2C communcation in slave mode by reusing code by g4lvanix
 the slave code IS MODIFIED from the original
