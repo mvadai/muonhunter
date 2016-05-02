@@ -8,7 +8,7 @@
  * Website:	http://muonhunter.com
  *
  * License: GPL v.3
- * Version: 0.2
+ * Version: 0.3a
  */
 #define F_CPU 8192000UL
 
@@ -16,6 +16,7 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <util/twi.h>
 #include <avr/pgmspace.h>
 #include <stdio.h>
 #include "pcd8544.c"
@@ -188,6 +189,82 @@ ISR(TIMER0_OVF_vect)
 	}
 	
 }
+ISR(TWI_vect){
+	// this code is modified from the g4lvanix git repo
+	// see README.md
+	// temporary stores the received data
+	uint8_t data;
+	
+	// own address has been acknowledged
+	if( (TWSR & 0xF8) == TW_SR_SLA_ACK ){  
+		buffer_address = 0xA;
+		// clear TWI interrupt flag, prepare to receive next byte and acknowledge
+		TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
+	}
+	else if( (TWSR & 0xF8) == TW_SR_DATA_ACK ){ // data has been received in slave receiver mode
+		
+		// save the received byte inside data 
+		data = TWDR;
+		
+		// check wether an address has already been transmitted or not
+		if(buffer_address == 0xA){
+			
+			buffer_address = data; 
+			
+			// clear TWI interrupt flag, prepare to receive next byte and acknowledge
+			TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
+		}
+		else{ // if a databyte has already been received
+			
+			// store the data at the current address
+			rxbuffer[buffer_address] = data;
+			
+			// increment the buffer address
+			buffer_address++;
+			
+			// if there is still enough space inside the buffer
+			if(buffer_address < 0xA){
+				// clear TWI interrupt flag, prepare to receive next byte and acknowledge
+				TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
+			}
+			else{
+				// clear TWI interrupt flag, prepare to receive last byte and don't acknowledge
+				TWCR |= (1<<TWIE) | (1<<TWINT) | (0<<TWEA) | (1<<TWEN); 
+			}
+		}
+	}
+	else if( (TWSR & 0xF8) == TW_ST_DATA_ACK ){ // device has been addressed to be a transmitter
+		
+		// copy data from TWDR to the temporary memory
+		data = TWDR;
+		
+		// if no buffer read address has been sent yet
+		if( buffer_address == 0xA ){
+			buffer_address = data;
+		}
+		
+		// copy the specified buffer address into the TWDR register for transmission
+		TWDR = txbuffer[buffer_address];
+		// increment buffer read address
+		buffer_address++;
+		
+		// if there is another buffer address that can be sent
+		if(buffer_address < 0xA){
+			// clear TWI interrupt flag, prepare to send next byte and receive acknowledge
+			TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
+		}
+		else{
+			// clear TWI interrupt flag, prepare to send last byte and receive not acknowledge
+			TWCR |= (1<<TWIE) | (1<<TWINT) | (0<<TWEA) | (1<<TWEN); 
+		}
+		
+	}
+	else{
+		// if none of the above apply prepare TWI to be addressed again
+		TWCR |= (1<<TWIE) | (1<<TWEA) | (1<<TWEN);
+	} 
+}
+
 void Initialize()
 {
 	PCICR = 0x6;
@@ -229,6 +306,9 @@ void Initialize()
 	flash_gm1();
 	flash_gm2();
 	flash_muon();
+	init_uart(57600);
+	TWAR = 0x32;
+	TWCR = (1<<TWIE) | (1<<TWEA) | (1<<TWINT) | (1<<TWEN);
 	LcdInit();
 	LcdContrast(0x41);
 	sei();
@@ -247,7 +327,7 @@ void Initialize()
 	LcdStr(FONT_1X, str);
 	LcdUpdate();
 	LcdGotoXYFont(1,4);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("Firmware: v0.2"));
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("Firmware:v0.3a"));
 	LcdUpdate();
 	LcdGotoXYFont(1,6);
 	LcdFStr(FONT_1X,(unsigned char*)PSTR("muonhunter.com"));
@@ -470,24 +550,32 @@ void update_counter()
 }
 void flash_gm1(){
 	if ((state & 0xC) >> 2 == 0x1 || (state & 0xC) >> 2 == 0x2 ){
+	//TODO temp fix, proper uart enable-disable to be implemented
+	UCSR0B &= ~(1<<RXEN0);
 	PORTD &= ~(1 << MUON_LED);
+	PORTD &= ~(1 << GM2_LED);
 	PORTD |= (1 << GM1_LED);
 	_delay_ms(64);
 	PORTD &= ~(1 << GM1_LED);
 	gm_LED_comp++;
+	UCSR0B |= (1<<RXEN0);
 	}
 }
 void flash_gm2(){
 	if ((state & 0xC) >> 2 == 0x1 || (state & 0xC) >> 2 == 0x2 ){
+	UCSR0B &= ~(1<<RXEN0);
 	PORTD &= ~(1 << MUON_LED);
+	PORTD &= ~(1 << GM1_LED);
 	PORTD |= (1 << GM2_LED);
 	_delay_ms(64);
 	PORTD &= ~(1 << GM2_LED);
 	gm_LED_comp++;
+	UCSR0B |= (1<<RXEN0);
 	}
 }
 void flash_muon(){
 	if ((state & 0xC) >> 2 == 0x1 || (state & 0xC) >> 2 == 0x2 ){
+		UCSR0B &= ~(1<<RXEN0);
 		PORTD &= ~(1 << GM1_LED);
 		PORTD &= ~(1 << GM2_LED);
 		PORTD |= (1 << MUON_LED);
@@ -496,6 +584,7 @@ void flash_muon(){
 		PORTD &= ~(1 << GM1_LED);
 		PORTD &= ~(1 << GM2_LED);
 		muon_LED_comp++;
+		UCSR0B |= (1<<RXEN0);
 	}
 }
 void gm_buzz()
@@ -594,6 +683,16 @@ void timer_update()
 	gm2_rolling[timer_sec] = gm2_sum;
 	gm1_total += gm1_sum;
 	gm2_total += gm2_sum;
+	txbuffer[0x9] = ( gm1_total & 0xFF000000 ) >> 24;
+	txbuffer[0x8] = ( gm1_total & 0xFF0000 ) >> 16;
+	txbuffer[0x7] = ( gm1_total & 0xFF00 ) >> 8;
+	txbuffer[0x6] = ( gm1_total & 0xFF );
+	txbuffer[0x5] = ( gm2_total & 0xFF000000 ) >> 24;
+	txbuffer[0x4] = ( gm2_total & 0xFF0000 ) >> 16;
+	txbuffer[0x3] = ( gm2_total & 0xFF00 ) >> 8;
+	txbuffer[0x2] = ( gm2_total & 0xFF );
+	txbuffer[0x1] = ( muon_total & 0xFF00 ) >> 8;
+	txbuffer[0x0] = ( muon_total & 0xFF ); 
 	muon_cnt_per_min += muon_sum;
 	timer_sec++;
 	timer_compensate();
@@ -778,6 +877,7 @@ void rolling_display_init(){
 	update_counter();
 	}
 void display_time(){
+	
 // time
 	LcdGotoXYFont(1,6);
 	dtostrf((double)timer_day,2,0,str);
@@ -825,3 +925,15 @@ void display_time(){
 		LcdUpdate();
 	}	
 	}
+	
+void init_uart(uint16_t baudrate){
+
+	uint16_t UBRR_val = (F_CPU/16)/(baudrate-1);
+
+	UBRR0H = UBRR_val >> 8;
+	UBRR0L = UBRR_val;
+
+	UCSR0B |= (1<<TXEN0) | (1<<RXEN0) | (1<<RXCIE0); // UART TX (Transmit - senden) einschalten
+	UCSR0C |= (1<<USBS0) | (3<<UCSZ00); //Modus Asynchron 8N1 (8 Datenbits, No Parity, 1 Stopbit)
+}
+
