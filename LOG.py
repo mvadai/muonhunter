@@ -14,6 +14,12 @@ from time import time, gmtime, sleep, strftime
 import sys
 from settings import *
 
+logging_time = int(logging_time)
+refresh_rate = int(refresh)
+database = db
+runid = 0
+start_time = 0
+
 bus = smbus.SMBus(1)
 
 if database == '':
@@ -35,23 +41,19 @@ def update_db():
 def print_output(gm1,gm2,muon):
 	sys.stderr.write("\x1b[2J\x1b[H")
 	print 'Muon Hunter datalogging\n'.center(72)
-	print '{0:8}{1:12}{2:7}{3:14}{4:12}{5}'.format('Setup', 'Signal', 'GPIO', 'CPS to mR/h', 'mR to uGy', 'Trigger')
-	print '{0:8}{1:12}{2:4d}'.format('', 'GM1', '')
-	if GM2 != 0:
-		print '{0:8}{1:12}{2:4d}'.format('', 'GM2', '')
-	if COSMIC != 0:
-		print '{0:8}{1:12}{2:4d}'.format('', 'COSMIC', '')
 	print '\nDatalogging started: {0}\n'.format(start_time)
-	print '{0:9}{1:15}{2:8}{3:10}{4:15}{5:15}'.format('Signal','Total counts','CPM','Av. CPM', 'Dose uGy/h', 'Av. Dose uGy/h')
-	print '{0:9}{1:12d} {2:.12f}\n'.format('GM1',gm1,BMP180.TEMP)
+	print '{0:9}{1:15}'.format('Signal','Total counts')
+	print '{0:9}{1:12d}\n'.format('GM1',gm1)
 	if GM2 != 0:
-		print '{0:9}{1:12d} {2:.12f}\n'.format('GM2',gm2,BMP180.PRESSURE)
+		print '{0:9}{1:12d}\n'.format('GM2',gm2)
 	if COSMIC != 0:
-		print '{0:9}{1:15}{2:8}{3:10}{4:15}{5:15}'.format('Signal','Total counts','CPH','Av. CPH', 'Dose uGy/h', 'Av. Dose uGy/h')
-		print '{0:9}{1:12d} {2:.12f}\n'.format('COSMIC',muon,muon)
+		print '{0:9}{1:15}'.format('Signal','Total counts')
+		print '{0:9}{1:12d}\n'.format('COSMIC',muon)
+	print 'Temperature = {0:.1f} *C'.format(BMP180.TEMP)
+	print 'Pressure = {0:d} Pa'.format(int(BMP180.PRESSURE))
 	print 'Time remaining: {0:d} s\n'.format(int(round(logging_time - (time() - start_time))))
-	print '(c) 2014 Mihaly Vadai'
-	print 'For more information visit:\nhttp://mihalysprojects.weebly.com/blog/category/cosmic-ray'
+	print '(c) 2016 Mihaly Vadai'
+	print 'For more information visit:\nhttp://muonhunter.com'
 
 conn = sqlite3.connect(database)
 c = conn.cursor()
@@ -73,8 +75,14 @@ while time() < start_time + logging_time:
 	try:
 		data = bus.read_i2c_block_data(avr_address, 0)
 	except IOError:
-		print 'Cannot open I2C bus. Check connections.'
-		raise
+		print 'I2C Bus busy, retrying:'
+		try:
+			sleep(1)
+			data = bus.read_i2c_block_data(avr_address, 0)
+		except IOError:
+			print 'I2C Bus still busy, exiting.'
+			raise
+		
 	muon_total = data[1] + (data[2] << 8)
 	gm2_total = data[3] + (data[4] << 8) + (data[5] << 16) + (data[6] << 24)
 	gm1_total = data[7] + (data[8] << 8) + (data[9] << 16) + (data[10] << 24)

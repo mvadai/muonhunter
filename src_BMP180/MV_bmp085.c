@@ -116,7 +116,6 @@ if ( DEBUG == 1 ) printf("\nX2 = %ld \n", X2);
 
 int main(int argc, char **argv){
   int MSB, LSB, XLSB, timing, DEVICE_ADDRESS;
-  double temperature;
   
   DEVICE_ADDRESS = 0x77;
 
@@ -141,7 +140,6 @@ if ( DEBUG == 1 ) printf("\nMSB = %d\nLSB = %d ",MSB,LSB);
   UP = ((MSB << 16) + (LSB << 8) + XLSB) >> (8 - OSS);
 if ( DEBUG == 1 ) printf("\nMSB = %d,\nLSB = %d,\nXLSB = %d", MSB, LSB, XLSB);
   get_readings(UT, UP);
-  temperature = temp/10;
-  printf("Temperature: %.1f *C, Pressure: %d Pa\n", temperature, (int) pressure);
+  printf("Temperature: %.1f *C, Pressure: %d Pa\n", (double)temp/10, (int) pressure);
   return 0;
 }
