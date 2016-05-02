@@ -96,7 +96,7 @@ void get_readings(long UT, long UP){
 
 int main(int argc, char **argv){
   int MSB, LSB, XLSB, timing, DEVICE_ADDRESS;
-  double temperature, sealevel, ALTITUDE;
+  double sealevel, ALTITUDE;
 
   if (argc != 2) {
     printf("usage: %s [altitude in meters]\n", argv[0]);
@@ -127,9 +127,8 @@ int main(int argc, char **argv){
   UP = ((MSB << 16) + (LSB << 8) + XLSB) >> (8 - OSS);
 
   get_readings(UT, UP);
-  temperature = temp/10;
   sealevel = (double) pressure / pow((1.0-ALTITUDE/44330.0),5.255);
-  printf("Temperature: %.1f *C, Pressure: %d Pa\n", temperature, (int) pressure);
+  printf("Temperature: %.1f *C, Pressure: %d Pa\n", (double)temp/10, (int) pressure);
   printf("Pressure at sea level: %.0f\n", sealevel);
   return 0;
 }
