@@ -17,6 +17,7 @@ Software for the Muon Hunter project
 ### 0.3a - unstable: no python datalogging code for this yet
 - I2C communcation in slave mode by reusing code by g4lvanix
 the slave code IS MODIFIED from the original
+- LED flash problem fixed.
 
 To get the total GM and muon data using RPi python:
 
@@ -45,8 +46,6 @@ device 51
 52 + 2*2^8 + 0*2^16 + 0*2^24 on GM1
 
 The rest is just repetition.
-
-TODO: LED flash problem fix.
 
 
 ### 0.4 (planned) 

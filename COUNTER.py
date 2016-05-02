@@ -1,5 +1,5 @@
 # The COUNTER.py class for the the Muon Hunter
-# v0.2
+# v0.3
 #
 # (c) 2016 Mihaly Vadai 
 

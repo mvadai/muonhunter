@@ -98,4 +98,3 @@ void plateau_counter_update(void);
 void timer_update(void);
 void plateau_display_init(void);
 void rolling_display_init(void);
-void init_uart(uint16_t baudrate);

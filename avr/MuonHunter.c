@@ -306,7 +306,6 @@ void Initialize()
 	flash_gm1();
 	flash_gm2();
 	flash_muon();
-	init_uart(57600);
 	TWAR = 0x32;
 	TWCR = (1<<TWIE) | (1<<TWEA) | (1<<TWINT) | (1<<TWEN);
 	LcdInit();
@@ -550,32 +549,26 @@ void update_counter()
 }
 void flash_gm1(){
 	if ((state & 0xC) >> 2 == 0x1 || (state & 0xC) >> 2 == 0x2 ){
-	//TODO temp fix, proper uart enable-disable to be implemented
-	UCSR0B &= ~(1<<RXEN0);
 	PORTD &= ~(1 << MUON_LED);
 	PORTD &= ~(1 << GM2_LED);
 	PORTD |= (1 << GM1_LED);
 	_delay_ms(64);
 	PORTD &= ~(1 << GM1_LED);
 	gm_LED_comp++;
-	UCSR0B |= (1<<RXEN0);
 	}
 }
 void flash_gm2(){
 	if ((state & 0xC) >> 2 == 0x1 || (state & 0xC) >> 2 == 0x2 ){
-	UCSR0B &= ~(1<<RXEN0);
 	PORTD &= ~(1 << MUON_LED);
 	PORTD &= ~(1 << GM1_LED);
 	PORTD |= (1 << GM2_LED);
 	_delay_ms(64);
 	PORTD &= ~(1 << GM2_LED);
 	gm_LED_comp++;
-	UCSR0B |= (1<<RXEN0);
 	}
 }
 void flash_muon(){
 	if ((state & 0xC) >> 2 == 0x1 || (state & 0xC) >> 2 == 0x2 ){
-		UCSR0B &= ~(1<<RXEN0);
 		PORTD &= ~(1 << GM1_LED);
 		PORTD &= ~(1 << GM2_LED);
 		PORTD |= (1 << MUON_LED);
@@ -584,7 +577,6 @@ void flash_muon(){
 		PORTD &= ~(1 << GM1_LED);
 		PORTD &= ~(1 << GM2_LED);
 		muon_LED_comp++;
-		UCSR0B |= (1<<RXEN0);
 	}
 }
 void gm_buzz()
@@ -926,14 +918,3 @@ void display_time(){
 	}	
 	}
 	
-void init_uart(uint16_t baudrate){
-
-	uint16_t UBRR_val = (F_CPU/16)/(baudrate-1);
-
-	UBRR0H = UBRR_val >> 8;
-	UBRR0L = UBRR_val;
-
-	UCSR0B |= (1<<TXEN0) | (1<<RXEN0) | (1<<RXCIE0); // UART TX (Transmit - senden) einschalten
-	UCSR0C |= (1<<USBS0) | (3<<UCSZ00); //Modus Asynchron 8N1 (8 Datenbits, No Parity, 1 Stopbit)
-}
-
