@@ -229,7 +229,7 @@ ISR(TWI_vect){
 			buffer_address++;
 			
 			// if there is still enough space inside the buffer
-			if(buffer_address < 0x1F{
+			if(buffer_address < 0x1F){
 				// clear TWI interrupt flag, prepare to receive next byte and acknowledge
 				TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
 			}
