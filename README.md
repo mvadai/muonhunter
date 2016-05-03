@@ -94,10 +94,10 @@ detector extrapolates the data for the base time period based on current observa
 This is indicated on the LCD by displaying a '*' next to the number.
 Otherwise it displays a rolling average based on the last base time period.
 
-EG. 108, 0, 1
+EG. 38, 0, 1,
 means in the muon data that 1 hour hasn't elapsed since datalogging, so given the current
-rate of muon detections the code's best guess is 108 for the hourly number of muons
-provided the rate doesn't change. This number is based on 5 observations as you can see from
+rate of muon detections the code's best guess is 38 for the hourly number of muons
+provided the rate doesn't change. This number is based on 9 observations as you can see from
 the total number of muons that you should treat accordingly. 
 So the extrapolation flag is just an indication that you should use these
 numbers carefully. (The base period for GM hits is 1 min.)
