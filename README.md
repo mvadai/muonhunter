@@ -44,7 +44,7 @@ Data is written into muonhunter.db every 1s. This is an sqlite database.
 The writing frequency can be changed in settings.py.
 
 #### Export data into spreadsheet
-- Check out this ideo: https://www.youtube.com/watch?v=lY-0Rk3oNpw
+- Check out this video: https://www.youtube.com/watch?v=lY-0Rk3oNpw
 
 ## AVR firmware version history:
 
