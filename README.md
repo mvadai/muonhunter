@@ -34,16 +34,17 @@ counting coincidences
 ### Usage
 
 #### Live mode
-sudo python LOG.py <number of seconds>
+sudo python LOG.py \<number of seconds\>
 
 #### Daemon / background task mode
-- Over SSH: nohup sudo python LOG.py <number of seconds> >/dev/null 2>&1 &
-- Console: sudo python LOG.py <number of seconds> >/dev/null 2>&1 &
+- Over SSH: nohup sudo python LOG.py \<number of seconds\> >/dev/null 2>&1 &
+- Console: sudo python LOG.py \<number of seconds\> >/dev/null 2>&1 &
 
 Data is written into muonhunter.db every 1s. This is an sqlite database.
+The writing frequency can be changed in settings.py.
 
 #### Export data into spreadsheet
-- Check out this video: https://www.youtube.com/watch?v=lY-0Rk3oNpw
+- Check out this ideo: https://www.youtube.com/watch?v=lY-0Rk3oNpw
 
 ## AVR firmware version history:
 
