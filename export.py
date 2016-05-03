@@ -1,5 +1,5 @@
 # export.py
-# Created: 18/08/2015
+# Created: 03/05/2016
 # Last modified: 03/05/2016
 # 
 # Author: Mihaly Vadai
@@ -7,7 +7,7 @@
 # 
 # For credits see README.md
 #
-# License: GPL v.3
+# Licence: GPL v.3
 # Version: 0.3
 
 from optparse import OptionParser
@@ -46,7 +46,7 @@ channel = args.channel
 if channel == None or channel == 'GM1' or channel == 'GM2' or channel == 'muon':
 	pass
 else:
-	print "Not valid channel ID. Try: GM1, GM2 or muon" 
+	print "Invalid channel ID. Try: GM1, GM2 or muon" 
 	sys.exit("Exiting: 1")
 
 	

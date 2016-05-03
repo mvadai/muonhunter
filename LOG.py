@@ -1,10 +1,14 @@
-# The main program for the Muon Hunter python datalogging
-# v0.3
+# LOG.py
+# Created: 03/05/2016
+# Last modified: 03/05/2016
+# Author: Mihaly Vadai
+# Website:	http://muonhunter.com
 # 
-# (c) 2016 Mihaly Vadai http://muonhunter.com
+# For credits see README.md
 #
 # Licence: GPL v.3
-# see LICENCE
+# Version: 0.3
+
 
 avr_address = 0x19
 
