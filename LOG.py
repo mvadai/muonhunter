@@ -35,24 +35,40 @@ if logging_time < 1:
 	print('Warning: logging time not valid. Check your terminal input.')
 	print('Continuing for 60 seconds.')
 	logging_time = 60
+def read_i2c():
+	try:
+		data = bus.read_i2c_block_data(avr_address, 0)
+	except IOError:
+		print 'I2C Bus busy, retrying:'
+		try:
+			sleep(1)
+			data = bus.read_i2c_block_data(avr_address, 0)
+		except IOError:
+			print 'I2C Bus still busy, exiting.'
+			raise
+	
+	return data
+
+data = read_i2c()
 
 conn = sqlite3.connect(database)
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS runs (runid INTEGER PRIMARY KEY AUTOINCREMENT, 
-	starttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ''')
+	starttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, detector INTEGER) ''')
 c.execute('''CREATE TABLE IF NOT EXISTS run (run INTEGER, 
 	channel TEXT, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, pressure REAL, temperature REAL,
 	total_counts INTEGER, counts_per_period INTEGER, exrap_flag INTEGER, image_flag INTEGER,
 	image_name TEXT, FOREIGN KEY(run) REFERENCES runs(runid))''')
 	
-c.execute('''INSERT INTO runs DEFAULT VALUES''')
+c.execute('''INSERT INTO runs ('starttime', detector) VALUES (DateTime("now"), ?)''', (data[20],))
+
 conn.commit()
 runid = c.execute('''SELECT * FROM runs ORDER BY runid DESC LIMIT 1''').fetchone()[0]
 
 def print_output(*args):
 	sys.stderr.write("\x1b[2J\x1b[H")
 	print 'Muon Hunter datalogging\n'.center(72)
-	print '\nDatalogging started: {0}       Run ID = {1:d} \n'.format(start_time, int(runid))
+	print '\nDatalogging started: {0}       Run ID = {1:d}  Detector serial: {2:d}\n'.format(start_time, int(runid), int(serial))
 	print '{0:9}{1:15}{2:16}{3:12}'.format('Signal','Total counts', 'Hits per min', 'Extrapolated')
 	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('GM1',gm1_total,gm1_per_min,gm1_ex_flag)
 	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('GM2',gm2_total,gm2_per_min,gm2_ex_flag)
@@ -65,23 +81,11 @@ def print_output(*args):
 	print 'For more information visit:\nhttp://muonhunter.com'
 
 
-
-
-
 start_time = time()
 BMP180 = PAC(runid, start_time)
 
 while time() < start_time + logging_time:
-	try:
-		data = bus.read_i2c_block_data(avr_address, 0)
-	except IOError:
-		print 'I2C Bus busy, retrying:'
-		try:
-			sleep(1)
-			data = bus.read_i2c_block_data(avr_address, 0)
-		except IOError:
-			print 'I2C Bus still busy, exiting.'
-			raise
+	data = read_i2c()
 	muon_total = data[1] + (data[2] << 8)
 	gm2_total = data[3] + (data[4] << 8) + (data[5] << 16) + (data[6] << 24)
 	gm1_total = data[7] + (data[8] << 8) + (data[9] << 16) + (data[10] << 24)
@@ -91,11 +95,12 @@ while time() < start_time + logging_time:
 	gm2_ex_flag = data[16]
 	gm1_per_min = data[17] + (data[18] << 8)
 	gm1_ex_flag = data[19]
+	serial = data[20]
 	
 	BMP180.update()
 	
 	print_output(muon_total, gm2_total, gm1_total, muon_per_hour,
-		muon_ex_flag, gm2_per_min, gm2_ex_flag, gm1_per_min, gm1_ex_flag)
+		muon_ex_flag, gm2_per_min, gm2_ex_flag, gm1_per_min, gm1_ex_flag, serial)
 		
 	gm1_data = (runid, 'GM1', BMP180.PRESSURE, BMP180.TEMP, gm1_total, gm1_per_min, gm1_ex_flag, 0, '')
 	gm2_data = (runid, 'GM2', BMP180.PRESSURE, BMP180.TEMP, gm2_total, gm2_per_min, gm2_ex_flag, 0, '')
