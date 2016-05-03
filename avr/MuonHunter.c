@@ -1,8 +1,8 @@
 /* 
  *
  * MuonHunter.c
- * Created: 18/08/2015 10:28:44
- * Last modified: 02/05/2016 15:30:49
+ * Created: 18/08/2015
+ * Last modified: 03/05/2016
  * 
  * Author: Mihaly Vadai
  * Website:	http://muonhunter.com
@@ -10,7 +10,12 @@
  * License: GPL v.3
  * Version: 0.3a
  */
+//external crystal
 #define F_CPU 8192000UL
+
+// Test w/o crystal at 3.3V
+// also see MuonHunter.h for timer settings
+//#define F_CPU 8000000UL
 
 #include <avr/io.h>
 #include <avr/eeprom.h>
@@ -190,14 +195,15 @@ ISR(TIMER0_OVF_vect)
 	
 }
 ISR(TWI_vect){
-	// this code is modified from the g4lvanix git repo
+	// this code is modified from the g4lvanix git repo 
+	// buffers resized: ran out of memory on an ATmega168
 	// see README.md
 	// temporary stores the received data
 	uint8_t data;
 	
 	// own address has been acknowledged
 	if( (TWSR & 0xF8) == TW_SR_SLA_ACK ){  
-		buffer_address = 0xA;
+		buffer_address = 0x1F;
 		// clear TWI interrupt flag, prepare to receive next byte and acknowledge
 		TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
 	}
@@ -207,7 +213,7 @@ ISR(TWI_vect){
 		data = TWDR;
 		
 		// check wether an address has already been transmitted or not
-		if(buffer_address == 0xA){
+		if(buffer_address == 0x1F){
 			
 			buffer_address = data; 
 			
@@ -223,7 +229,7 @@ ISR(TWI_vect){
 			buffer_address++;
 			
 			// if there is still enough space inside the buffer
-			if(buffer_address < 0xA){
+			if(buffer_address < 0x1F){
 				// clear TWI interrupt flag, prepare to receive next byte and acknowledge
 				TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
 			}
@@ -239,7 +245,7 @@ ISR(TWI_vect){
 		data = TWDR;
 		
 		// if no buffer read address has been sent yet
-		if( buffer_address == 0xA ){
+		if( buffer_address == 0x1F ){
 			buffer_address = data;
 		}
 		
@@ -249,7 +255,7 @@ ISR(TWI_vect){
 		buffer_address++;
 		
 		// if there is another buffer address that can be sent
-		if(buffer_address < 0xA){
+		if(buffer_address < 0x1F){
 			// clear TWI interrupt flag, prepare to send next byte and receive acknowledge
 			TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
 		}
@@ -392,7 +398,9 @@ void update_counter()
 {
 	double extrap = 0;
 	uint8_t muon_extrap = 0;
-	if ( modes == 0x3F || modes == 0x15 )
+	// see register descriptions 
+	if ( modes == 0x3F || modes == 0x35 )
+	// second modes
 	{
 		// muon total
 		LcdGotoXYFont(10,2);
@@ -440,6 +448,8 @@ void update_counter()
 		LcdUpdate();
 		
 		} else {
+		// minute modes
+		
 		// muon total
 		LcdGotoXYFont(10,2);
 		dtostrf((double)muon_total,5,0,str);
@@ -457,6 +467,7 @@ void update_counter()
 				muon_extrap += muon_rolling[i];
 			}
 			extrap = ((double)muon_extrap*3600 / (timer_min*60 + timer_sec));
+			set_muon_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
 			dtostrf(extrap,5,0,str);
 		}
 		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1)
@@ -466,8 +477,11 @@ void update_counter()
 			LcdUpdate();
 			if ( timer_sec > 0)
 			{
-				dtostrf((double)muon_cnt_per_min*3600/timer_sec,5,0,str);
+				extrap = (double)muon_cnt_per_min*3600/timer_sec;
+				set_muon_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
+				dtostrf(extrap,5,0,str);
 				}else{
+				set_muon_roll_buffer(1, 0, 0);
 				dtostrf((double)0,5,0,str);
 			}
 			
@@ -482,6 +496,7 @@ void update_counter()
 			{
 				muon_cnt_per_hour += muon_rolling[i];
 			}
+			set_muon_roll_buffer(0, ((uint16_t)muon_cnt_per_hour & 0xFF00) >> 8, (uint16_t)muon_cnt_per_hour & 0xFF);
 			dtostrf((double)muon_cnt_per_hour,5,0,str);
 			muon_cnt_per_hour = 0;
 		}
@@ -496,6 +511,7 @@ void update_counter()
 		{
 			gm1_cnt_per_min += gm1_rolling[i];
 		}
+		set_GM1_roll_buffer(0, ((uint16_t)gm1_cnt_per_min & 0xFF00) >> 8, (uint16_t)gm1_cnt_per_min & 0xFF);
 		
 		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1 )
 		{
@@ -504,9 +520,12 @@ void update_counter()
 			LcdUpdate();
 			if ( timer_sec < 1 )
 			{
+				set_GM1_roll_buffer(1, 0, 0);
 				dtostrf((double)0,5,0,str);
 				}else{
-				dtostrf((double)gm1_cnt_per_min*60/timer_sec,5,0,str);
+				extrap = (double)gm1_cnt_per_min*60/timer_sec ;
+				set_GM1_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
+				dtostrf(extrap,5,0,str);
 			}
 			}else{
 			LcdGotoXYFont(9,4);
@@ -524,7 +543,7 @@ void update_counter()
 		{
 			gm2_cnt_per_min += gm2_rolling[i];
 		}
-		
+		set_GM2_roll_buffer(0, ((uint16_t)gm2_cnt_per_min & 0xFF00) >> 8, (uint16_t)gm2_cnt_per_min & 0xFF);
 		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1 )
 		{
 			LcdGotoXYFont(9,5);
@@ -532,9 +551,12 @@ void update_counter()
 			LcdUpdate();
 			if ( timer_sec < 1 )
 			{
+				set_GM2_roll_buffer(1, 0, 0);
 				dtostrf((double)0,5,0,str);
 				}else{
-				dtostrf((double)gm2_cnt_per_min*60/timer_sec,5,0,str);
+				extrap = (double)gm1_cnt_per_min*60/timer_sec ;
+				set_GM2_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
+				dtostrf(extrap,5,0,str);
 			}
 			}else{
 			LcdGotoXYFont(9,5);
@@ -917,4 +939,21 @@ void display_time(){
 		LcdUpdate();
 	}	
 	}
-	
+void set_muon_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
+{
+			txbuffer[0xC] = extrapolation_flag; // extrapolation flag
+			txbuffer[0xB] = MSB;
+			txbuffer[0xA] = LSB;
+	}
+void set_GM1_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
+{
+			txbuffer[0xF] = extrapolation_flag; // extrapolation flag
+			txbuffer[0xE] = MSB;
+			txbuffer[0xD] = LSB;
+	}
+void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
+{
+			txbuffer[0x12] = extrapolation_flag; // extrapolation flag
+			txbuffer[0x11] = MSB;
+			txbuffer[0x10] = LSB;
+	}

@@ -1,8 +1,8 @@
 /* 
  *
  * MuonHunter.h
- * Created: 18/08/2015 10:28:44
- * Last modified: 02/05/2016 15:30:49
+ * Created: 18/08/2015
+ * Last modified: 03/05/2016
  * 
  * Author: Mihaly Vadai
  * Website:	http://muonhunter.com
@@ -14,9 +14,11 @@
  */
 
 volatile uint8_t SERIAL = 19;
-// test mode w/o crystal #define TIMER_OVF_M 122
+// test mode w/o crystal 
+// #define TIMER_OVF_M 122
 #define TIMER_OVF_M 125
-// test mode w/o crystal #define TIMER_OVF_S 3906
+// test mode w/o crystal 
+// #define TIMER_OVF_S 3906
 #define TIMER_OVF_S 4000
 #define OSS 0
 
@@ -47,7 +49,7 @@ volatile uint8_t state = DEFAULT_STATE;
 volatile uint8_t modes = DEFAULT_MODE;
 volatile char str[7];
 volatile uint8_t buffer_address;
-volatile uint8_t txbuffer[0xA];
+volatile uint8_t txbuffer[0x1F];
 volatile uint8_t rxbuffer[0xA];
 
 // core timers and sums
@@ -98,3 +100,6 @@ void plateau_counter_update(void);
 void timer_update(void);
 void plateau_display_init(void);
 void rolling_display_init(void);
+void set_muon_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB);
+void set_GM1_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB);
+void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB);
