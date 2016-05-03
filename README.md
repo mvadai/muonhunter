@@ -1,7 +1,13 @@
 # muonhunter
-Software for the Muon Hunter project
+Software for the Muon Hunter project 
 
 ### Licence: GPL v.3
+
+The RPi Makefile and the MV_bmp085 code uses wiringPi as a library
+issued under (LGPL v.3) see wiringpi.com
+
+This work is licenced under GPL v.3 as per this information: 
+http://www.gnu.org/licenses/gpl-faq.html#AllCompatibility
 
 ## RPi python and C++ datalogging software  version history:
 
@@ -15,7 +21,7 @@ Software for the Muon Hunter project
 - sqlite capability added
 TODO: fix RPi bug GM2 and Muon signal
 
-### 0.3a
+### 0.3a - unstable
 - I2C based datalogging for the GM signals, too
 - AVR records coincidences
 - python event handling removed due to lack of precision when
@@ -66,6 +72,7 @@ read as follows from left to right:
 
 Extrapolation means that the base time period hasn't elapsed yet since the beginning of datalogging so the
 detector extrapolates the data for the base time period based on current observations.
+This is indicated on the LCD by displaying a '*' next to the number.
 Otherwise it displays a rolling average based on the last base time period.
 
 EG. 108, 0, 1
@@ -81,7 +88,7 @@ numbers carefully. (The base period for GM hits is 1 min.)
 - TODO: implement second mode including buffers
 
 ### Credits
-- Sylvain Bissonette, Louis Frigon & Fandi Gunawan for the pcd8544 LCD driver code
+- Sylvain Bissonette, Louis Frigon & Fandi Gunawan for the pcd8544 LCD driver code (GPL v.3)
 - g4lvanix - eliaselectronics.com for the I2C slave library - this code
-is modified from the original
- 
+is modified from the original (public domain)
+- the RPi Makefile and the MV_bmp085 code uses wiringPi as a library - see wiringpi.com
