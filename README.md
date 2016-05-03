@@ -25,7 +25,7 @@ TODO: fix RPi bug GM2 and Muon signal
 ### 0.3
 - I2C based datalogging for the GM signals, too
 - AVR records coincidences
-- python event handling removed due to lack of precision when
+- python event handling removed due to lack of accuracy when
 counting coincidences
 - UI program revised
 - LOG.py main datalogging script added
