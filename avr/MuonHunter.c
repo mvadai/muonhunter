@@ -229,7 +229,7 @@ ISR(TWI_vect){
 			buffer_address++;
 			
 			// if there is still enough space inside the buffer
-			if(buffer_address < 0x1F){
+			if(buffer_address < 0x1F{
 				// clear TWI interrupt flag, prepare to receive next byte and acknowledge
 				TWCR |= (1<<TWIE) | (1<<TWINT) | (1<<TWEA) | (1<<TWEN); 
 			}
@@ -698,6 +698,10 @@ void timer_update()
 	gm2_rolling[timer_sec] = gm2_sum;
 	gm1_total += gm1_sum;
 	gm2_total += gm2_sum;
+	txbuffer[0x17] = timer_day;
+	txbuffer[0x16] = timer_hour;
+	txbuffer[0x15] = timer_min;
+	txbuffer[0x14] = timer_sec;
 	txbuffer[0x9] = ( gm1_total & 0xFF000000 ) >> 24;
 	txbuffer[0x8] = ( gm1_total & 0xFF0000 ) >> 16;
 	txbuffer[0x7] = ( gm1_total & 0xFF00 ) >> 8;

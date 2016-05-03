@@ -35,6 +35,7 @@ if logging_time < 1:
 	print('Warning: logging time not valid. Check your terminal input.')
 	print('Continuing for 60 seconds.')
 	logging_time = 60
+	
 def read_i2c():
 	try:
 		data = bus.read_i2c_block_data(avr_address, 0)
@@ -58,7 +59,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS runs (runid INTEGER PRIMARY KEY AUTOINCR
 c.execute('''CREATE TABLE IF NOT EXISTS run (run INTEGER, 
 	channel TEXT, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, pressure REAL, temperature REAL,
 	total_counts INTEGER, counts_per_period INTEGER, exrap_flag INTEGER, image_flag INTEGER,
-	image_name TEXT, FOREIGN KEY(run) REFERENCES runs(runid))''')
+	image_name TEXT, t_d INTEGER, t_h INTEGER, t_m INTEGER, t_s INTEGER, FOREIGN KEY(run) REFERENCES runs(runid))''')
 	
 c.execute('''INSERT INTO runs ('starttime', detector) VALUES (DateTime("now"), ?)''', (data[20],))
 
@@ -74,6 +75,7 @@ def print_output(*args):
 	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('GM2',gm2_total,gm2_per_min,gm2_ex_flag)
 	print '{0:9}{1:15}{2:17}{3:12}'.format('Signal','Total counts', 'Hits per hour', 'Extrapolated')
 	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('COSMIC',muon_total,muon_per_hour,muon_ex_flag)
+	print 'Detector time: {0:d}day {1:d}:{2:d}:{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
 	print 'Temperature = {0:.1f} *C'.format(BMP180.TEMP)
 	print 'Pressure = {0:d} Pa'.format(int(BMP180.PRESSURE))
 	print 'Time remaining: {0:d} s\n'.format(int(round(logging_time - (time() - start_time))))
@@ -96,18 +98,23 @@ while time() < start_time + logging_time:
 	gm1_per_min = data[17] + (data[18] << 8)
 	gm1_ex_flag = data[19]
 	serial = data[20]
+	timer_sec = data[21]
+	timer_min = data[22]
+	timer_hour = data[23]
+	timer_day = data[24]
 	
 	BMP180.update()
 	
 	print_output(muon_total, gm2_total, gm1_total, muon_per_hour,
-		muon_ex_flag, gm2_per_min, gm2_ex_flag, gm1_per_min, gm1_ex_flag, serial)
+		muon_ex_flag, gm2_per_min, gm2_ex_flag, gm1_per_min, gm1_ex_flag, serial,
+		timer_sec, timer_min, timer_hour, timer_day)
 		
-	gm1_data = (runid, 'GM1', BMP180.PRESSURE, BMP180.TEMP, gm1_total, gm1_per_min, gm1_ex_flag, 0, '')
-	gm2_data = (runid, 'GM2', BMP180.PRESSURE, BMP180.TEMP, gm2_total, gm2_per_min, gm2_ex_flag, 0, '')
-	muon_data = (runid, 'Muon', BMP180.PRESSURE, BMP180.TEMP, muon_total, muon_per_hour, muon_ex_flag, 0, '')
-	c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?)', gm1_data)
-	c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?)', gm2_data)
-	c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?)', muon_data)
+	gm1_data = (runid, 'GM1', BMP180.PRESSURE, BMP180.TEMP, gm1_total, gm1_per_min, gm1_ex_flag, 0, '', t_d, t_h, t_m, t_s)
+	gm2_data = (runid, 'GM2', BMP180.PRESSURE, BMP180.TEMP, gm2_total, gm2_per_min, gm2_ex_flag, 0, '', t_d, t_h, t_m, t_s)
+	muon_data = (runid, 'Muon', BMP180.PRESSURE, BMP180.TEMP, muon_total, muon_per_hour, muon_ex_flag, 0, '', t_d, t_h, t_m, t_s)
+	c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', gm1_data)
+	c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', gm2_data)
+	c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', muon_data)
 	conn.commit()
 	
 	sleep(refresh_rate)
