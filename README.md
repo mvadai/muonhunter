@@ -30,6 +30,20 @@ counting coincidences
 - UI program revised
 - LOG.py experimental script added
 
+### Usage
+
+#### Live mode
+sudo python LOG.py <number of seconds>
+
+#### Daemon / background task mode
+- Over SSH: nohup sudo python LOG.py <number of seconds> >/dev/null 2>&1 &
+- Console: sudo python LOG.py <number of seconds> >/dev/null 2>&1 &
+
+Data is written into muonhunter.db every 1s. This is an sqlite database.
+
+#### Export data into spreadsheet
+- Sqlite dump...
+
 ## AVR firmware version history:
 
 ### 0.1
@@ -42,13 +56,13 @@ counting coincidences
 - Lightbug fixed.
 - GM counting precision improved
 
-### 0.3a - unstable
+### 0.3
 - I2C communcation in slave mode by reusing code by g4lvanix
 the slave code IS MODIFIED from the original
 - LED flash problem fixed.
 - cleaned I2C data
 
-#### Usage in python (should you wish to write your own client program):
+### Usage in python (should you wish to write your own client program):
 
 sudo python
 
@@ -60,7 +74,7 @@ bus.read_i2c_block_data(0x19, 0)
 
 #### Example dataset:
 
-[51, 5, 0, 60, 0, 0, 0, 88, 0, 0, 0, 108, 0, 1, 40, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+[51, 5, 0, 60, 0, 0, 0, 88, 0, 0, 0, 108, 0, 1, 40, 0, 0, 24, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 read as follows from left to right:
 - Device [51,
@@ -70,6 +84,7 @@ read as follows from left to right:
 - Muon per hour LSB, MSB, extrapolation flag values  108, 0, 1,
 - GM1 per min LSB, MSB, extrapolation flag values 40, 0, 0,
 - GM2 per min LSB, MSB, extrapolation flag values 24, 0, 0,
+- Detector serial number: 10
 
 Extrapolation means that the base time period hasn't elapsed yet since the beginning of datalogging so the
 detector extrapolates the data for the base time period based on current observations.
