@@ -75,17 +75,18 @@ bus.read_i2c_block_data(0x19, 0)
 
 #### Example dataset:
 
-[51, 5, 0, 60, 0, 0, 0, 88, 0, 0, 0, 108, 0, 1, 40, 0, 0, 24, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+[51, 9, 0, 68, 1, 0, 0, 63, 1, 0, 0, 38, 0, 1, 13, 0, 0, 25, 0, 0, 10, 11, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 read as follows from left to right:
 - Device [51,
-- Muon total LSB, MSB values 5, 0
-- GM1 total XXLSB, XLSB, LSB, MSB values 60, 0, 0, 0
-- GM2 total XXLSB, XLSB, LSB, MSB values 88, 0, 0, 0,
-- Muon per hour LSB, MSB, extrapolation flag values  108, 0, 1,
-- GM1 per min LSB, MSB, extrapolation flag values 40, 0, 0,
-- GM2 per min LSB, MSB, extrapolation flag values 24, 0, 0,
+- Muon total LSB, MSB values 9, 0
+- GM1 total XXLSB, XLSB, LSB, MSB values 68, 1, 0, 0
+- GM2 total XXLSB, XLSB, LSB, MSB values 63, 1, 0, 0,
+- Muon per hour LSB, MSB, extrapolation flag values  38, 0, 1,
+- GM1 per min LSB, MSB, extrapolation flag values 13, 0, 0,
+- GM2 per min LSB, MSB, extrapolation flag values 25, 0, 0,
 - Detector serial number: 10
+- Detector time  (sent in opposite order) SS:MM:HH:DD meaning 0d 00:14:11
 
 Extrapolation means that the base time period hasn't elapsed yet since the beginning of datalogging so the
 detector extrapolates the data for the base time period based on current observations.

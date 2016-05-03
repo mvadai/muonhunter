@@ -55,7 +55,9 @@ if filename == None:
 
 with open(filename, 'wb') as csvfile:
 	gmwriter = csv.writer(csvfile, delimiter=',')
-	gmwriter.writerow(("RUN ID", "Channel", "Log time", "Pressure (Pa)", "Temperature *C", "Total hits", "Counts per period", "Image flag", "Image name", "D day", "D hour", "D min", "D sec"))
+	gmwriter.writerow(("RUN ID", "Channel", "Log time", "Pressure (Pa)", 
+		"Temperature *C", "Total hits", "Counts per period", "Extrapolation flag", "Image flag", 
+		"Image name", "D day", "D hour", "D min", "D sec"))
 	if run == None and channel == None:
 		for row in c.execute("SELECT * from run"):
 			gmwriter.writerow(row)

@@ -75,8 +75,24 @@ def print_output(*args):
 	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('GM2',gm2_total,gm2_per_min,gm2_ex_flag)
 	print '{0:9}{1:15}{2:17}{3:12}'.format('Signal','Total counts', 'Hits per hour', 'Extrapolated')
 	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('COSMIC',muon_total,muon_per_hour,muon_ex_flag)
-	print 'Detector time: {0:d}day {1:d}:{2:d}:{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
-	print 'Temperature = {0:.1f} *C'.format(BMP180.TEMP)
+	if t_h < 10 and t_m < 10 and t_s < 10:
+		print 'Detector time: {0:d}day 0{1:d}:0{2:d}:0{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h < 10 and t_m < 10 and t_s >= 10:
+		print 'Detector time: {0:d}day 0{1:d}:0{2:d}:{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h < 10 and t_m >= 10 and t_s < 10:
+		print 'Detector time: {0:d}day 0{1:d}:{2:d}:0{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h < 10 and t_m >= 10 and t_s >= 10:
+		print 'Detector time: {0:d}day 0{1:d}:{2:d}:{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h >= 10 and t_m < 10 and t_s < 10:
+		print 'Detector time: {0:d}day 0{1:d}:0{2:d}:0{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h >= 10 and t_m < 10 and t_s >= 10:
+		print 'Detector time: {0:d}day 0{1:d}:0{2:d}:{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h >= 10 and t_m >= 10 and t_s < 10:
+		print 'Detector time: {0:d}day 0{1:d}:{2:d}:0{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+	if t_h >= 10 and t_m >= 10 and t_s >= 10:
+		print 'Detector time: {0:d}day 0{1:d}:{2:d}:{3:d}'.format(int(t_d), int(t_h), int(t_m), int(t_s))
+		
+	print '\nTemperature = {0:.1f} *C'.format(BMP180.TEMP)
 	print 'Pressure = {0:d} Pa'.format(int(BMP180.PRESSURE))
 	print 'Time remaining: {0:d} s\n'.format(int(round(logging_time - (time() - start_time))))
 	print 'To abort press CTRL + C. Data is saved every {} second.\n'.format(refresh_rate)
@@ -98,16 +114,16 @@ while time() < start_time + logging_time:
 	gm1_per_min = data[17] + (data[18] << 8)
 	gm1_ex_flag = data[19]
 	serial = data[20]
-	timer_sec = data[21]
-	timer_min = data[22]
-	timer_hour = data[23]
-	timer_day = data[24]
+	t_s = data[21]
+	t_m = data[22]
+	t_h = data[23]
+	t_d = data[24]
 	
 	BMP180.update()
 	
 	print_output(muon_total, gm2_total, gm1_total, muon_per_hour,
 		muon_ex_flag, gm2_per_min, gm2_ex_flag, gm1_per_min, gm1_ex_flag, serial,
-		timer_sec, timer_min, timer_hour, timer_day)
+		t_d, t_h, t_m, t_s)
 		
 	gm1_data = (runid, 'GM1', BMP180.PRESSURE, BMP180.TEMP, gm1_total, gm1_per_min, gm1_ex_flag, 0, '', t_d, t_h, t_m, t_s)
 	gm2_data = (runid, 'GM2', BMP180.PRESSURE, BMP180.TEMP, gm2_total, gm2_per_min, gm2_ex_flag, 0, '', t_d, t_h, t_m, t_s)
