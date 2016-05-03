@@ -43,7 +43,7 @@ sudo python LOG.py <number of seconds>
 Data is written into muonhunter.db every 1s. This is an sqlite database.
 
 #### Export data into spreadsheet
-- Sqlite dump...
+- Check out this video: https://www.youtube.com/watch?v=lY-0Rk3oNpw
 
 ## AVR firmware version history:
 
