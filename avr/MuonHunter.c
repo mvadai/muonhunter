@@ -8,7 +8,7 @@
  * Website:	http://muonhunter.com
  *
  * License: GPL v.3
- * Version: 0.3a
+ * Version: 0.3
  */
 //external crystal
 #define F_CPU 8192000UL
@@ -273,6 +273,7 @@ ISR(TWI_vect){
 
 void Initialize()
 {
+	txbuffer[0x13] = SERIAL;
 	PCICR = 0x6;
 	PCMSK1 = 0xF;
 	PCMSK2 = 0xE0;
@@ -941,19 +942,19 @@ void display_time(){
 	}
 void set_muon_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
 {
-			txbuffer[0xC] = extrapolation_flag; // extrapolation flag
+			txbuffer[0xC] = extrapolation_flag;
 			txbuffer[0xB] = MSB;
 			txbuffer[0xA] = LSB;
 	}
 void set_GM1_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
 {
-			txbuffer[0xF] = extrapolation_flag; // extrapolation flag
+			txbuffer[0xF] = extrapolation_flag;
 			txbuffer[0xE] = MSB;
 			txbuffer[0xD] = LSB;
 	}
 void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
 {
-			txbuffer[0x12] = extrapolation_flag; // extrapolation flag
+			txbuffer[0x12] = extrapolation_flag;
 			txbuffer[0x11] = MSB;
 			txbuffer[0x10] = LSB;
 	}
