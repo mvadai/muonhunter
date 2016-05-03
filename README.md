@@ -4,7 +4,8 @@ Software for the Muon Hunter project
 ### Licence: GPL v.3
 
 The RPi Makefile and the MV_bmp085 code uses wiringPi as a library
-issued under (LGPL v.3) see wiringpi.com
+issued under (LGPL v.3) see COPYING.LESSER in the src_BMP180 directory 
+for the wiringPi licence.
 
 This work is licenced under GPL v.3 as per this information: 
 http://www.gnu.org/licenses/gpl-faq.html#AllCompatibility
