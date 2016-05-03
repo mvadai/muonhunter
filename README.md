@@ -22,13 +22,14 @@ http://www.gnu.org/licenses/gpl-faq.html#AllCompatibility
 - sqlite capability added
 TODO: fix RPi bug GM2 and Muon signal
 
-### 0.3a - unstable
+### 0.3
 - I2C based datalogging for the GM signals, too
 - AVR records coincidences
 - python event handling removed due to lack of precision when
 counting coincidences
 - UI program revised
-- LOG.py experimental script added
+- LOG.py main datalogging script added
+- export.py database to csv export script added
 
 ### Usage
 
