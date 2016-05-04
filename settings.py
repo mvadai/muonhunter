@@ -1,11 +1,19 @@
-# settings.py for the Muon Hunter datalogging
-# v0.3
+# settings.py
+# Created: 03/05/2016
+# Last modified: 04/05/2016
+# Author: Mihaly Vadai
+# Website:	http://muonhunter.com
+# 
+# For credits see README.md
 #
-# (c) 2016 Mihaly Vadai 
-# GNU GPL v3
-# Thank you.
+# Licence: GPL v.3
+# Version: 0.3
 
-#Databese name
+#AVR address - address of the Muon Hunter kit in hex format
+#if unsure run: sudo i2cdetect -y 1 and copy the number here
+avr = 0x19
+
+#Database name
 db = 'muonhunter.db'
 
 #Set the default logging time below
