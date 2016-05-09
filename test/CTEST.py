@@ -5,7 +5,8 @@
 # (c) Mihaly Vadai - muonhunter.com, 2016
 
 import RPi.GPIO as GPIO
-from time import time, gmtime, strftime
+from ../PAC import PAC
+from time import time, gmtime, strftime, sleep
 
 class CTEST:
 	def __init__(self, test_pins, coincidence_pin):
@@ -33,6 +34,13 @@ class CTEST:
 		self.status = -1
 		self.log = []
 
+	def bmp_test(self):
+		BMP180 = PAC(0, 0)
+		for i in range(0,10):
+			BMP180.update()
+			print "Pressure: {0:d} Pa, Temperature: {1:f} *C".format(int(BMP180.PRESSURE), float(BMP180.TEMP))
+			sleep(1)
+		
 	def run(self):
 		self.status = 2
 		self.START_TIME = time()
