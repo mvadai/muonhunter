@@ -31,6 +31,9 @@ counting coincidences
 - LOG.py main datalogging script added
 - export.py database to csv export script added
 
+### 0.3cam
+- Camera and image sorting added
+
 ### Usage
 
 #### Live mode
