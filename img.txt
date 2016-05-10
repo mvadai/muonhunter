@@ -1,2 +1,0 @@
-# Directory for the images
-# set enable_camera = 1 in settings.py
