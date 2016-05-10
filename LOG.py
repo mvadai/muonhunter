@@ -170,9 +170,7 @@ try:
 		sleep(refresh_rate)
 
 except KeyboardInterrupt:
-	if enable_camera == 1:
-		GPIO.cleanup()
+	GPIO.cleanup()
 	sys.exit("\nExiting.")
 		
-if enable_camera == 1:
-	GPIO.cleanup()
+GPIO.cleanup()
