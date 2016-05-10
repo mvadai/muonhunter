@@ -22,5 +22,15 @@ logging_time = 60
 #set this to 1 if you connect the camera
 enable_camera = 0
 
-# Set the datalogging frequency and screen refresh rate.
+#trigger channel for the camera GPIO.BCM
+camera_trigger = 23
+
+#image filter
+#if this is set to 0 the camera will
+#be triggered more often, resulting in a lot more images
+#you'll have to sort images by hand
+#setting 1 the program filters images for you
+image_filter = 1
+
+# Set the datalogging frequency and screen refresh rate in seconds.
 refresh = 1
