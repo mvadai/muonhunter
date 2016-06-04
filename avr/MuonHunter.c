@@ -555,7 +555,7 @@ void update_counter()
 				set_GM2_roll_buffer(1, 0, 0);
 				dtostrf((double)0,5,0,str);
 				}else{
-				extrap = (double)gm1_cnt_per_min*60/timer_sec ;
+				extrap = (double)gm2_cnt_per_min*60/timer_sec ;
 				set_GM2_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
 				dtostrf(extrap,5,0,str);
 			}
