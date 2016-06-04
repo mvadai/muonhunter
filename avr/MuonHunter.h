@@ -2,7 +2,7 @@
  *
  * MuonHunter.h
  * Created: 18/08/2015
- * Last modified: 03/05/2016
+ * Last modified: 04/06/2016
  * 
  * Author: Mihaly Vadai
  * Website:	http://muonhunter.com
@@ -40,8 +40,8 @@ volatile uint8_t SERIAL = 19;
 
 // output
 #define MUON_LED	PD0
-#define GM1_LED		PD1
-#define GM2_LED		PD2
+#define GM1_LED		PD2
+#define GM2_LED		PD1
 #define MUON_BUZZER PD3
 #define LIGHTSWITCH PD4
 

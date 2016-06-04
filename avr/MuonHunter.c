@@ -2,7 +2,7 @@
  *
  * MuonHunter.c
  * Created: 18/08/2015
- * Last modified: 03/05/2016
+ * Last modified: 04/06/2016
  * 
  * Author: Mihaly Vadai
  * Website:	http://muonhunter.com
@@ -952,13 +952,13 @@ void set_muon_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
 	}
 void set_GM1_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
 {
-			txbuffer[0xF] = extrapolation_flag;
-			txbuffer[0xE] = MSB;
-			txbuffer[0xD] = LSB;
-	}
-void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
-{
 			txbuffer[0x12] = extrapolation_flag;
 			txbuffer[0x11] = MSB;
 			txbuffer[0x10] = LSB;
+	}
+void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
+{
+			txbuffer[0xF] = extrapolation_flag;
+			txbuffer[0xE] = MSB;
+			txbuffer[0xD] = LSB;
 	}

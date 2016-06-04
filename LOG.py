@@ -1,6 +1,6 @@
 # LOG.py
 # Created: 03/05/2016
-# Last modified: 10/05/2016
+# Last modified: 03/06/2016
 # Author: Mihaly Vadai
 # Website:	http://muonhunter.com
 # 
@@ -17,25 +17,28 @@ from time import time, gmtime, sleep, strftime
 import sys
 from settings import *
 import os
-from picamera import *
-camera = PiCamera()
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(camera_trigger, GPIO.IN)
+if enable_camera:
+	from picamera import *
+	camera = PiCamera()
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(camera_trigger, GPIO.IN)
 
 bus = smbus.SMBus(1)
 
 def read_i2c():
-	try:
-		data = bus.read_i2c_block_data(avr_address, 0)
-	except IOError:
-		print 'I2C error, retrying:'
+	error = 1
+	while ( error > 0 and error < 10 ):
 		try:
-			sleep(1)
 			data = bus.read_i2c_block_data(avr_address, 0)
+			error = 0
 		except IOError:
-			print 'Persistent I2C error, check AVR address.'
-			raise
+			sleep(1)
+			error =+ 1
 	
+	if error > 10:
+		GPIO.cleanup()
+		sys.exit("\nPermanent I2C error, check the device address.")
+		
 	return data
 	
 avr_address = int(avr)
@@ -170,7 +173,9 @@ try:
 		sleep(refresh_rate)
 
 except KeyboardInterrupt:
-	GPIO.cleanup()
+	if enable_camera:
+		GPIO.cleanup()
 	sys.exit("\nExiting.")
-		
-GPIO.cleanup()
+
+if enable_camera:		
+	GPIO.cleanup()
