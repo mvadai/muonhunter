@@ -191,6 +191,8 @@ void Initialize()
 	AC_BD_hits = 0;
 	AD_hits = 0;
 	AB_CD_hits = 0;
+	BC_hits = 0;
+	A_B_C_D_hits = 0;
 	flash_gm1();
 	flash_gm2();
 	flash_muon();
@@ -268,7 +270,7 @@ void Initialize()
 	LcdFStr(FONT_1X,(unsigned char*)PSTR("A+B+C+D:"));
 	LcdUpdate();
 	LcdGotoXYFont(10,5);
-	dtostrf((double)BC_hits,5,0,str);
+	dtostrf((double)A_B_C_D_hits,5,0,str);
 	LcdStr(FONT_1X, str);
 	LcdUpdate();
 	
@@ -306,7 +308,7 @@ void update_counter()
 	LcdUpdate();
 	
 	LcdGotoXYFont(10,5);
-	dtostrf((double)BC_hits,5,0,str);
+	dtostrf((double)A_B_C_D_hits,5,0,str);
 	LcdStr(FONT_1X, str);
 	LcdUpdate();
 	display_time();
