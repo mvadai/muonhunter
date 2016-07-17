@@ -8,7 +8,7 @@
  * Website:	http://muonhunter.com
  *
  * License: GPL v.3
- * Version: 0.3
+ * Version: 0.3-eero
  */
 //external crystal
 #define F_CPU 8192000UL
@@ -33,39 +33,24 @@ int main(void){
 	while(1){};
 }
 ISR(PCINT1_vect, ISR_BLOCK){
-	uint8_t GM_PINS = (PINC & 0x07);
-	uint8_t CONTROL_PINS = (PINC & 0x8);
+	uint8_t GM_PINS = (PINC & 0xF);
 	
 	switch ( GM_PINS )
 	{
-		case 0x5 :
-		gm1_hits++;
-		flash_gm1();
-		gm_buzz();
+		case 0xD :
+		AC_BD_hits++;
 		break;
 			
-		case 0x3 :
-		gm2_hits++;
-		flash_gm2();
-		gm_buzz();
+		case 0xB :
+		AD_hits++;
 		break;
 			
-		case ( GM_PINS & 0x0 ) :
-		muon_hits++;
-		gm1_hits++;
-		gm2_hits++;
-		muon_total++;
-		flash_muon();
-		muon_buzz();
+		case 0xE:
+		AB_CD_hits++;
+		break;
 		
-		break;
-	}
-	
-	//reset
-	switch( CONTROL_PINS )
-	{
-		case 0x0 :
-		Initialize();
+		case 0x7:
+		A_B_C_D_hits++;
 		break;
 	}
 }
@@ -165,13 +150,13 @@ ISR(TIMER0_OVF_vect)
 {
 	timer_time++;
 	
-	gm1_sum += gm1_hits;
-	gm2_sum += gm2_hits;
-	muon_sum += muon_hits;
+	gm1_sum += AC_BD_hits;
+	gm2_sum += AD_hits;
+	muon_sum += AB_CD_hits;
 	
-	gm1_hits = 0;
-	gm2_hits = 0;
-	muon_hits = 0;
+	AC_BD_hits = 0;
+	AD_hits = 0;
+	AB_CD_hits = 0;
 	
 	if ( modes == 0x3F || modes == 0x15 )
 	{
@@ -295,11 +280,11 @@ void Initialize()
 	muon_LED_comp = 0;
 	gm_buzz_comp = 0;
 	muon_buzz_comp = 0;
-	gm1_hits = 0;
-	gm2_hits = 0;
-	muon_hits = 0;
-	gm1_total = 0;
-	gm2_total = 0;
+	AC_BD_hits = 0;
+	AD_hits = 0;
+	AB_CD_hits = 0;
+	AC_BD_total = 0;
+	AD_total = 0;
 	for ( uint8_t i = 0; i < MEMORY_LIMIT; i++){
 		gm1_rolling[i] = 0;
 		gm2_rolling[i] = 0;
@@ -309,7 +294,7 @@ void Initialize()
 	gm2_cnt_per_min = 0;
 	muon_cnt_per_min = 0;
 	muon_cnt_per_hour = 0;
-	muon_total = 0;
+	AB_CD_total = 0;
 	flash_gm1();
 	flash_gm2();
 	flash_muon();
@@ -405,7 +390,7 @@ void update_counter()
 	{
 		// muon total
 		LcdGotoXYFont(10,2);
-		dtostrf((double)muon_total,5,0,str);
+		dtostrf((double)AB_CD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		// Muons
@@ -453,7 +438,7 @@ void update_counter()
 		
 		// muon total
 		LcdGotoXYFont(10,2);
-		dtostrf((double)muon_total,5,0,str);
+		dtostrf((double)AB_CD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		// Muons
@@ -647,7 +632,7 @@ void change_clock(uint8_t mode)
 		LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
 		LcdUpdate();
 		LcdGotoXYFont(10,2);
-		dtostrf((double)muon_total,5,0,str);
+		dtostrf((double)AB_CD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		LcdGotoXYFont(2,3);
@@ -676,7 +661,7 @@ void change_clock(uint8_t mode)
 		LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
 		LcdUpdate();
 		LcdGotoXYFont(10,2);
-		dtostrf((double)muon_total,5,0,str);
+		dtostrf((double)AB_CD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		LcdGotoXYFont(2,3);
@@ -696,22 +681,22 @@ void timer_update()
 	timer_time = 0;
 	gm1_rolling[timer_sec] = gm1_sum;
 	gm2_rolling[timer_sec] = gm2_sum;
-	gm1_total += gm1_sum;
-	gm2_total += gm2_sum;
+	AC_BD_total += gm1_sum;
+	AD_total += gm2_sum;
 	txbuffer[0x17] = timer_day;
 	txbuffer[0x16] = timer_hour;
 	txbuffer[0x15] = timer_min;
 	txbuffer[0x14] = timer_sec;
-	txbuffer[0x9] = ( gm1_total & 0xFF000000 ) >> 24;
-	txbuffer[0x8] = ( gm1_total & 0xFF0000 ) >> 16;
-	txbuffer[0x7] = ( gm1_total & 0xFF00 ) >> 8;
-	txbuffer[0x6] = ( gm1_total & 0xFF );
-	txbuffer[0x5] = ( gm2_total & 0xFF000000 ) >> 24;
-	txbuffer[0x4] = ( gm2_total & 0xFF0000 ) >> 16;
-	txbuffer[0x3] = ( gm2_total & 0xFF00 ) >> 8;
-	txbuffer[0x2] = ( gm2_total & 0xFF );
-	txbuffer[0x1] = ( muon_total & 0xFF00 ) >> 8;
-	txbuffer[0x0] = ( muon_total & 0xFF ); 
+	txbuffer[0x9] = ( AC_BD_total & 0xFF000000 ) >> 24;
+	txbuffer[0x8] = ( AC_BD_total & 0xFF0000 ) >> 16;
+	txbuffer[0x7] = ( AC_BD_total & 0xFF00 ) >> 8;
+	txbuffer[0x6] = ( AC_BD_total & 0xFF );
+	txbuffer[0x5] = ( AD_total & 0xFF000000 ) >> 24;
+	txbuffer[0x4] = ( AD_total & 0xFF0000 ) >> 16;
+	txbuffer[0x3] = ( AD_total & 0xFF00 ) >> 8;
+	txbuffer[0x2] = ( AD_total & 0xFF );
+	txbuffer[0x1] = ( AB_CD_total & 0xFF00 ) >> 8;
+	txbuffer[0x0] = ( AB_CD_total & 0xFF ); 
 	muon_cnt_per_min += muon_sum;
 	timer_sec++;
 	timer_compensate();
@@ -764,7 +749,7 @@ void plateau_counter_update(){
 		uint8_t muon_extrap = 0;
 		// muon total
 		LcdGotoXYFont(10,2);
-		dtostrf((double)muon_total,5,0,str);
+		dtostrf((double)AB_CD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		// Muons
@@ -816,7 +801,7 @@ void plateau_counter_update(){
 		LcdGotoXYFont(9,4);
 		LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
 		LcdUpdate();
-		dtostrf((double)gm1_total,5,0,str);
+		dtostrf((double)AC_BD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		
@@ -825,7 +810,7 @@ void plateau_counter_update(){
 		LcdGotoXYFont(9,5);
 		LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
 		LcdUpdate();
-		dtostrf((double)gm2_total,5,0,str);
+		dtostrf((double)AD_total,5,0,str);
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 		
@@ -848,7 +833,7 @@ void plateau_display_init(){
 	LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
 	LcdUpdate();
 	LcdGotoXYFont(10,2);
-	dtostrf((double)muon_total,5,0,str);
+	dtostrf((double)AB_CD_total,5,0,str);
 	LcdStr(FONT_1X, str);
 	LcdUpdate();
 	LcdGotoXYFont(2,3);
@@ -880,7 +865,7 @@ void rolling_display_init(){
 	LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
 	LcdUpdate();
 	LcdGotoXYFont(10,2);
-	dtostrf((double)muon_total,5,0,str);
+	dtostrf((double)AB_CD_total,5,0,str);
 	LcdStr(FONT_1X, str);
 	LcdUpdate();
 	LcdGotoXYFont(2,3);

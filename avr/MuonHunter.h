@@ -10,7 +10,8 @@
  * For credits see README.md
  *
  * License: GPL v.3
- * Version: 0.3a
+ * Version: 0.3-eero
+ * 
  */
 
 volatile uint8_t SERIAL = 17;
@@ -30,12 +31,12 @@ volatile uint8_t SERIAL = 17;
 #define TWI_READ 0x1
 
 // input
-#define MUON_PIN	PC0
-#define GM1_PIN		PC1
-#define GM2_PIN		PC2
+#define AB_CD_PIN	PC0 // > MUON_PIN - OK
+#define AC_BD_PIN	PC1 // > GM1_PIN - OK
+#define AD_PIN		PC2 // > GM2_PIN - OK
 #define MUTE_BUTTON	PD6
-#define BACKLIGHT	PD5
-#define RST_BUTTON	PC3
+#define BC_PIN		PD5 // > BACKLIGHT
+#define A_B_C_D_PIN	PC3 // > RST_BUTTON
 #define MODE_BUTTON PD7
 
 // output
@@ -70,9 +71,10 @@ volatile uint8_t muon_buzz_comp = 0;
 volatile uint8_t uart_comp = 0;
 
 // core counting variables
-volatile uint16_t gm1_hits = 0;
-volatile uint16_t gm2_hits = 0;
-volatile uint16_t muon_hits = 0;
+volatile uint16_t AC_BD_hits = 0;
+volatile uint16_t AD_hits = 0;
+volatile uint16_t AB_CD_hits = 0;
+volatile uint16_t A_B_C_D_hits = 0;
 volatile uint16_t gm1_rolling[MEMORY_LIMIT];
 volatile uint16_t gm2_rolling[MEMORY_LIMIT];
 volatile uint16_t muon_rolling[MEMORY_LIMIT];
@@ -80,9 +82,10 @@ volatile uint16_t gm1_cnt_per_min = 0;
 volatile uint16_t gm2_cnt_per_min = 0;
 volatile uint16_t muon_cnt_per_min = 0;
 volatile uint16_t muon_cnt_per_hour = 0;
-volatile uint16_t muon_total = 0;
-volatile uint32_t gm1_total = 0;
-volatile uint32_t gm2_total = 0;
+volatile uint16_t AB_CD_total = 0;
+volatile uint32_t AC_BD_total = 0;
+volatile uint32_t AD_total = 0;
+volatile uint32_t A_B_C_D_total = 0;
 char buffer[3];
 
 void Initialize(void);
