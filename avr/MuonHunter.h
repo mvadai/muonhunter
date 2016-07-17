@@ -36,7 +36,7 @@ volatile uint8_t SERIAL = 17;
 #define AD_PIN		PC2 // > GM2_PIN - OK
 #define MUTE_BUTTON	PD6
 #define BC_PIN		PD5 // > BACKLIGHT
-#define A_B_C_D_PIN	PC3 // > RST_BUTTON
+#define A_B_C_D_PIN	PC3 // > RST_BUTTON - OK
 #define MODE_BUTTON PD7
 
 // output
@@ -59,9 +59,6 @@ volatile uint8_t timer_sec = 0;
 volatile uint8_t timer_min = 0;
 volatile uint8_t timer_hour = 0;
 volatile uint8_t timer_day = 0;
-volatile uint8_t gm1_sum = 0;
-volatile uint8_t gm2_sum = 0;
-volatile uint8_t muon_sum = 0;
 
 //timer compensation variables
 volatile uint8_t gm_LED_comp = 0;
@@ -73,19 +70,9 @@ volatile uint8_t uart_comp = 0;
 // core counting variables
 volatile uint16_t AC_BD_hits = 0;
 volatile uint16_t AD_hits = 0;
+volatile uint16_t BC_hits = 0;
 volatile uint16_t AB_CD_hits = 0;
 volatile uint16_t A_B_C_D_hits = 0;
-volatile uint16_t gm1_rolling[MEMORY_LIMIT];
-volatile uint16_t gm2_rolling[MEMORY_LIMIT];
-volatile uint16_t muon_rolling[MEMORY_LIMIT];
-volatile uint16_t gm1_cnt_per_min = 0;
-volatile uint16_t gm2_cnt_per_min = 0;
-volatile uint16_t muon_cnt_per_min = 0;
-volatile uint16_t muon_cnt_per_hour = 0;
-volatile uint16_t AB_CD_total = 0;
-volatile uint32_t AC_BD_total = 0;
-volatile uint32_t AD_total = 0;
-volatile uint32_t A_B_C_D_total = 0;
 char buffer[3];
 
 void Initialize(void);
@@ -101,8 +88,3 @@ void timer_compensate(void);
 void display_time(void);
 void plateau_counter_update(void);
 void timer_update(void);
-void plateau_display_init(void);
-void rolling_display_init(void);
-void set_muon_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB);
-void set_GM1_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB);
-void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB);

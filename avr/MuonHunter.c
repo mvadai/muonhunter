@@ -39,14 +39,17 @@ ISR(PCINT1_vect, ISR_BLOCK){
 	{
 		case 0xD :
 		AC_BD_hits++;
+		A_B_C_D_hits+=2;
 		break;
 			
 		case 0xB :
 		AD_hits++;
+		A_B_C_D_hits+=2;
 		break;
 			
 		case 0xE:
 		AB_CD_hits++;
+		A_B_C_D_hits+=2;
 		break;
 		
 		case 0x7:
@@ -56,107 +59,15 @@ ISR(PCINT1_vect, ISR_BLOCK){
 }
 ISR(PCINT2_vect, ISR_BLOCK)
 {
-	_delay_ms(8);
-	gm_buzz_comp++;
-	uint8_t CONTROL_PINS = (PIND & 0xE0) >> 5;
-	update_counter();
-	uint8_t lightstate = ((state & 0xC) >> 2);
-	uint8_t buzzerstate = (state & 0x3);
-	switch ( CONTROL_PINS ){
-		case 0x3:
-		switch ( modes )
-		{
-			case 0x0:
-			modes = 0x40;
-			plateau_display_init();
-			update_state();
-			break;
-			
-			case 0x40:
-			modes = 0x0;
-			rolling_display_init();
-			update_state();
-			break;
-			modes = DEFAULT_MODE;
-			update_counter();
-		}
-		break;
-		
-		case 0x5:
-		switch ( buzzerstate )
-		{
-			case 0x3:
-			state &= ~0x2;
-			update_state();
-			break;
-			
-			case 0x2:
-			state &= ~0x2;
-			update_state();
-			break;
-			
-			case 0x1:
-			state &= ~0x1;
-			state |= 0x2;
-			update_state();
-			break;
-			
-			case 0x0:
-			state |= 0x3;
-			update_state();
-			break;
-			
-			state = DEFAULT_STATE;
-			update_state();
-		}
-		break;
-		
-		case 0x6:
-		switch ( lightstate )
-		{
-			case 0x3 :
-			state &= ~0x8;
-			PORTD |= (1 << LIGHTSWITCH);
-			update_state();
-			break;
-			
-			case 0x2 :
-			state &= ~0x8;
-			PORTD &= ~(1 << LIGHTSWITCH);
-			update_state();
-			break;
-			
-			case 0x1 :
-			state &= ~0x4;
-			state |= 0x8;
-			PORTD &= ~(1 << LIGHTSWITCH);
-			update_state();
-			break;
-			
-			case 0x0 :
-			state |= 0x4;
-			PORTD |= (1 << LIGHTSWITCH);
-			update_state();
-			break;
-			
-			state = DEFAULT_STATE;
-			update_counter();
-		}
-		break;
-		
-	}
+	uint8_t GM_PINS = PIND;
+	if (PIND == 0x60) 
+	{ BC_hits++;
+	  A_B_C_D_hits+=2;}
+	  
 }
 ISR(TIMER0_OVF_vect)
 {
 	timer_time++;
-	
-	gm1_sum += AC_BD_hits;
-	gm2_sum += AD_hits;
-	muon_sum += AB_CD_hits;
-	
-	AC_BD_hits = 0;
-	AD_hits = 0;
-	AB_CD_hits = 0;
 	
 	if ( modes == 0x3F || modes == 0x15 )
 	{
@@ -285,15 +196,6 @@ void Initialize()
 	AB_CD_hits = 0;
 	AC_BD_total = 0;
 	AD_total = 0;
-	for ( uint8_t i = 0; i < MEMORY_LIMIT; i++){
-		gm1_rolling[i] = 0;
-		gm2_rolling[i] = 0;
-		muon_rolling[i] = 0;
-	}
-	gm1_cnt_per_min = 0;
-	gm2_cnt_per_min = 0;
-	muon_cnt_per_min = 0;
-	muon_cnt_per_hour = 0;
 	AB_CD_total = 0;
 	flash_gm1();
 	flash_gm2();
@@ -318,14 +220,65 @@ void Initialize()
 	LcdStr(FONT_1X, str);
 	LcdUpdate();
 	LcdGotoXYFont(1,4);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("Firmware:v0.3a"));
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("Firmware:v0.3-eero"));
 	LcdUpdate();
 	LcdGotoXYFont(1,6);
 	LcdFStr(FONT_1X,(unsigned char*)PSTR("muonhunter.com"));
 	LcdUpdate();
 	
 	_delay_ms(3000);
-	rolling_display_init();
+	
+	PCICR = 0x6;
+	PCMSK1 = 0xF;
+	PCMSK2 = 0xE0;
+	DDRC = 0x0;
+	PORTC = 0x3F;
+	LcdInit();
+	LcdContrast(0x41);
+	LcdClear();
+	LcdUpdate();
+	
+	LcdGotoXYFont(1,1);
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("AC or BD:"));
+	LcdUpdate();
+	LcdGotoXYFont(10,1);
+	dtostrf((double)AC_BD_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(1,2);
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("AB or CD:"));
+	LcdUpdate();
+	LcdGotoXYFont(10,2);
+	dtostrf((double)AB_CD_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(1,3);
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("AD:"));
+	LcdUpdate();
+	LcdGotoXYFont(10,3);
+	dtostrf((double)AD_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(1,4);
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("BC:"));
+	LcdUpdate();
+	LcdGotoXYFont(10,4);
+	dtostrf((double)BC_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(1,5);
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("A or B or C or D:"));
+	LcdUpdate();
+	LcdGotoXYFont(10,5);
+	dtostrf((double)BC_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	update_counter();
 		change_clock(0x0);
 
 update_counter();
@@ -382,177 +335,30 @@ void update_state()
 }
 void update_counter()
 {
-	double extrap = 0;
-	uint8_t muon_extrap = 0;
-	// see register descriptions 
-	if ( modes == 0x3F || modes == 0x35 )
-	// second modes
-	{
-		// muon total
-		LcdGotoXYFont(10,2);
-		dtostrf((double)AB_CD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		// Muons
-		LcdGotoXYFont(10,3);
-		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1)
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			if ( timer_sec != 0 )
-			{
-				extrap = ((double)muon_extrap*60 / (timer_sec));
-				}else{
-				extrap = (double)0;
-			}
-			
-			}else{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-			LcdUpdate();
-			dtostrf((double)muon_rolling[timer_min],5,0,str);
-		}
-		
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		// GM1
-		LcdGotoXYFont(9,4);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-		LcdUpdate();
-		dtostrf((double)gm1_rolling[timer_sec],5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		// GM2
-		LcdGotoXYFont(9,5);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-		LcdUpdate();
-		dtostrf((double)gm2_rolling[timer_sec],5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		} else {
-		// minute modes
-		
-		// muon total
-		LcdGotoXYFont(10,2);
-		dtostrf((double)AB_CD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		// Muons
-		LcdGotoXYFont(10,3);
-		if ( timer_hour < 1 && timer_min > 0)
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			for ( uint8_t i = 0 ; i < MEMORY_LIMIT ; i++ )
-			{
-				muon_extrap += muon_rolling[i];
-			}
-			extrap = ((double)muon_extrap*3600 / (timer_min*60 + timer_sec));
-			set_muon_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
-			dtostrf(extrap,5,0,str);
-		}
-		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1)
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			if ( timer_sec > 0)
-			{
-				extrap = (double)muon_cnt_per_min*3600/timer_sec;
-				set_muon_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
-				dtostrf(extrap,5,0,str);
-				}else{
-				set_muon_roll_buffer(1, 0, 0);
-				dtostrf((double)0,5,0,str);
-			}
-			
-			
-		}
-		if ( timer_hour > 0 || timer_day > 0 )
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-			LcdUpdate();
-			for ( uint8_t i = 0 ; i < MEMORY_LIMIT ; i++ )
-			{
-				muon_cnt_per_hour += muon_rolling[i];
-			}
-			set_muon_roll_buffer(0, ((uint16_t)muon_cnt_per_hour & 0xFF00) >> 8, (uint16_t)muon_cnt_per_hour & 0xFF);
-			dtostrf((double)muon_cnt_per_hour,5,0,str);
-			muon_cnt_per_hour = 0;
-		}
-		
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		// GM1
-		LcdGotoXYFont(10,4);
-		gm1_cnt_per_min = 0;
-		for ( uint8_t i = 0 ; i < MEMORY_LIMIT ; i++ )
-		{
-			gm1_cnt_per_min += gm1_rolling[i];
-		}
-		set_GM1_roll_buffer(0, ((uint16_t)gm1_cnt_per_min & 0xFF00) >> 8, (uint16_t)gm1_cnt_per_min & 0xFF);
-		
-		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1 )
-		{
-			LcdGotoXYFont(9,4);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			if ( timer_sec < 1 )
-			{
-				set_GM1_roll_buffer(1, 0, 0);
-				dtostrf((double)0,5,0,str);
-				}else{
-				extrap = (double)gm1_cnt_per_min*60/timer_sec ;
-				set_GM1_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
-				dtostrf(extrap,5,0,str);
-			}
-			}else{
-			LcdGotoXYFont(9,4);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-			LcdUpdate();
-			dtostrf((double)gm1_cnt_per_min,5,0,str);
-		}
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		// GM2
-		LcdGotoXYFont(10,5);
-		gm2_cnt_per_min = 0;
-		for ( uint8_t i = 0 ; i < MEMORY_LIMIT ; i++ )
-		{
-			gm2_cnt_per_min += gm2_rolling[i];
-		}
-		set_GM2_roll_buffer(0, ((uint16_t)gm2_cnt_per_min & 0xFF00) >> 8, (uint16_t)gm2_cnt_per_min & 0xFF);
-		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1 )
-		{
-			LcdGotoXYFont(9,5);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			if ( timer_sec < 1 )
-			{
-				set_GM2_roll_buffer(1, 0, 0);
-				dtostrf((double)0,5,0,str);
-				}else{
-				extrap = (double)gm2_cnt_per_min*60/timer_sec ;
-				set_GM2_roll_buffer(1, ((uint16_t)extrap & 0xFF00) >> 8, (uint16_t)extrap & 0xFF);
-				dtostrf(extrap,5,0,str);
-			}
-			}else{
-			LcdGotoXYFont(9,5);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-			LcdUpdate();
-			dtostrf((double)gm2_cnt_per_min,5,0,str);
-		}
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-	}
+	LcdGotoXYFont(10,1);
+	dtostrf((double)AC_BD_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(10,2);
+	dtostrf((double)AB_CD_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(10,3);
+	dtostrf((double)AD_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(10,4);
+	dtostrf((double)BC_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
+	
+	LcdGotoXYFont(10,5);
+	dtostrf((double)BC_hits,5,0,str);
+	LcdStr(FONT_1X, str);
+	LcdUpdate();
 	display_time();
 }
 void flash_gm1(){
@@ -679,34 +485,24 @@ void change_clock(uint8_t mode)
 void timer_update()
 {
 	timer_time = 0;
-	gm1_rolling[timer_sec] = gm1_sum;
-	gm2_rolling[timer_sec] = gm2_sum;
-	AC_BD_total += gm1_sum;
-	AD_total += gm2_sum;
 	txbuffer[0x17] = timer_day;
 	txbuffer[0x16] = timer_hour;
 	txbuffer[0x15] = timer_min;
 	txbuffer[0x14] = timer_sec;
-	txbuffer[0x9] = ( AC_BD_total & 0xFF000000 ) >> 24;
-	txbuffer[0x8] = ( AC_BD_total & 0xFF0000 ) >> 16;
-	txbuffer[0x7] = ( AC_BD_total & 0xFF00 ) >> 8;
-	txbuffer[0x6] = ( AC_BD_total & 0xFF );
-	txbuffer[0x5] = ( AD_total & 0xFF000000 ) >> 24;
-	txbuffer[0x4] = ( AD_total & 0xFF0000 ) >> 16;
-	txbuffer[0x3] = ( AD_total & 0xFF00 ) >> 8;
-	txbuffer[0x2] = ( AD_total & 0xFF );
-	txbuffer[0x1] = ( AB_CD_total & 0xFF00 ) >> 8;
-	txbuffer[0x0] = ( AB_CD_total & 0xFF ); 
-	muon_cnt_per_min += muon_sum;
+	txbuffer[0x9] = ( AC_BD_hits & 0xFF00 ) >> 8;
+	txbuffer[0x8] = ( AC_BD_hits & 0xFF ); 
+	txbuffer[0x7] = ( AD_hits & 0xFF00 ) >> 8;
+	txbuffer[0x6] = ( AD_hits & 0xFF ); 
+	txbuffer[0x7] = ( BC_hits & 0xFF00 ) >> 8;
+	txbuffer[0x6] = ( BC_hits & 0xFF ); 
+	txbuffer[0x3] = ( AB_CD_hits & 0xFF00 ) >> 8;
+	txbuffer[0x2] = ( AB_CD_hits & 0xFF );
+	txbuffer[0x1] = ( A_B_C_D_hits & 0xFF00 ) >> 8;
+	txbuffer[0x0] = ( A_B_C_D_hits & 0xFF ); 
 	timer_sec++;
 	timer_compensate();
-	gm1_sum = 0;
-	gm2_sum = 0;
-	muon_sum = 0;
 	if ( timer_sec == MEMORY_LIMIT * (60 / MEMORY_LIMIT) )
 	{
-		muon_rolling[timer_min] = muon_cnt_per_min;
-		muon_cnt_per_min = 0;
 		timer_min++;
 		timer_sec = 0;
 		if ( timer_min == MEMORY_LIMIT * (60 / MEMORY_LIMIT) )
@@ -744,142 +540,6 @@ void timer_compensate()
 	muon_buzz_comp = 0;
 }
 
-void plateau_counter_update(){
-		double extrap = 0;
-		uint8_t muon_extrap = 0;
-		// muon total
-		LcdGotoXYFont(10,2);
-		dtostrf((double)AB_CD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		// Muons
-		LcdGotoXYFont(10,3);
-		if ( timer_hour < 1 && timer_min > 0)
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			for ( uint8_t i = 0 ; i < MEMORY_LIMIT ; i++ )
-			{
-				muon_extrap += muon_rolling[i];
-			}
-			extrap = ((double)muon_extrap*3600 / (timer_min*60 + timer_sec));
-			dtostrf(extrap,5,0,str);
-		}
-		if ( timer_min < 1 && timer_hour < 1 && timer_day < 1)
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR("*"));
-			LcdUpdate();
-			if ( timer_sec > 0)
-			{
-				dtostrf((double)muon_cnt_per_min*3600/timer_sec,5,0,str);
-				}else{
-				dtostrf((double)0,5,0,str);
-			}
-			
-			
-		}
-		if ( timer_hour > 0 || timer_day > 0 )
-		{
-			LcdGotoXYFont(9,3);
-			LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-			LcdUpdate();
-			for ( uint8_t i = 0 ; i < MEMORY_LIMIT ; i++ )
-			{
-				muon_cnt_per_hour += muon_rolling[i];
-			}
-			dtostrf((double)muon_cnt_per_hour,5,0,str);
-			muon_cnt_per_hour = 0;
-		}
-		
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		//GM1 totals display
-		LcdGotoXYFont(10,4);
-		LcdGotoXYFont(9,4);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-		LcdUpdate();
-		dtostrf((double)AC_BD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		//GM2 totals display
-		LcdGotoXYFont(10,5);
-		LcdGotoXYFont(9,5);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" "));
-		LcdUpdate();
-		dtostrf((double)AD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		
-		display_time();
-}
-void plateau_display_init(){
-	
-	PCICR = 0x6;
-	PCMSK1 = 0xF;
-	PCMSK2 = 0xE0;
-	DDRC = 0x0;
-	PORTC = 0x3F;
-	LcdInit();
-	LcdContrast(0x41);
-	LcdClear();
-	LcdUpdate();
-	LcdImage(st);
-	LcdUpdate();
-	LcdGotoXYFont(2,2);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
-	LcdUpdate();
-	LcdGotoXYFont(10,2);
-	dtostrf((double)AB_CD_total,5,0,str);
-	LcdStr(FONT_1X, str);
-	LcdUpdate();
-	LcdGotoXYFont(2,3);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR(" /hour:"));
-	LcdUpdate();
-	LcdGotoXYFont(1,4);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("GM1 tot:"));
-	LcdUpdate();
-	LcdGotoXYFont(1,5);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("GM2 tot:"));
-	LcdUpdate();
-		
-	plateau_counter_update();
-	}
-
-void rolling_display_init(){
-	PCICR = 0x6;
-	PCMSK1 = 0xF;
-	PCMSK2 = 0xE0;
-	DDRC = 0x0;
-	PORTC = 0x3F;
-	LcdInit();
-	LcdContrast(0x41);
-	LcdClear();
-	LcdUpdate();
-	LcdImage(st);
-	LcdUpdate();
-	LcdGotoXYFont(2,2);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
-	LcdUpdate();
-	LcdGotoXYFont(10,2);
-	dtostrf((double)AB_CD_total,5,0,str);
-	LcdStr(FONT_1X, str);
-	LcdUpdate();
-	LcdGotoXYFont(2,3);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR(" /hour:"));
-	LcdUpdate();
-	LcdGotoXYFont(1,4);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("GM1/min:"));
-	LcdUpdate();
-	LcdGotoXYFont(1,5);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("GM2/min:"));
-	LcdUpdate();
-	
-	update_counter();
-	}
 void display_time(){
 	
 // time
@@ -928,22 +588,4 @@ void display_time(){
 		LcdStr(FONT_1X, str);
 		LcdUpdate();
 	}	
-	}
-void set_muon_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
-{
-			txbuffer[0xC] = extrapolation_flag;
-			txbuffer[0xB] = MSB;
-			txbuffer[0xA] = LSB;
-	}
-void set_GM1_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
-{
-			txbuffer[0x12] = extrapolation_flag;
-			txbuffer[0x11] = MSB;
-			txbuffer[0x10] = LSB;
-	}
-void set_GM2_roll_buffer(uint8_t extrapolation_flag, uint8_t MSB, uint8_t LSB)
-{
-			txbuffer[0xF] = extrapolation_flag;
-			txbuffer[0xE] = MSB;
-			txbuffer[0xD] = LSB;
 	}
