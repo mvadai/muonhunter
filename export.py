@@ -1,6 +1,6 @@
 # export.py
 # Created: 03/05/2016
-# Last modified: 04/05/2016
+# Last modified: 17/07/2016
 # 
 # Author: Mihaly Vadai
 # Website:	http://muonhunter.com
@@ -8,7 +8,7 @@
 # For credits ans usage see README.md
 #
 # Licence: GPL v.3
-# Version: 0.3
+# Version: 0.3-eero
 
 from optparse import OptionParser
 import sqlite3
@@ -31,7 +31,7 @@ parser = OptionParser()
 parser.add_option("-f", "--file", dest="filename",
 	help="write report to this file", metavar="FILE")
 parser.add_option("-r", "--run", dest="run", help="Enter the run id you are interested in after -r.")
-parser.add_option("-c", "--channel", dest="channel", help="GM1 or GM2 or Muon after -c")
+parser.add_option("-c", "--channel", dest="channel", help="a_b_c_d or ab_cd or bc or ad or ac_bd after -c")
 parser.add_option("-l", "--list-runs", action="store_const", const=1, dest="runs", 
 	help="The program lists the run IDs and start times stored in the database.")
 
@@ -65,10 +65,10 @@ if run != None and int(run) not in runs:
 
 channel = args.channel
 
-if channel == None or channel == 'GM1' or channel == 'GM2' or channel == 'Muon':
+if channel == None or channel == 'a_b_c_d' or channel == 'ab_cd' or channel == 'bc' or channel == 'ad' or channel == 'ac_bd':
 	pass
 else:
-	print "Invalid channel ID. Try: GM1, GM2 or muon" 
+	print "Invalid channel ID. Try: a_b_c_d or ab_cd or bc or ad or ac_bd" 
 	sys.exit("No data is exported. Exiting.")
 
 	

@@ -1,13 +1,13 @@
 # LOG.py
 # Created: 03/05/2016
-# Last modified: 03/06/2016
+# Last modified: 17/07/2016
 # Author: Mihaly Vadai
 # Website:	http://muonhunter.com
 # 
 # For credits and usage see README.md
 #
 # Licence: GPL v.3
-# Version: 0.3cam
+# Version: 0.3-eero
 
 import sqlite3
 import RPi.GPIO as GPIO
@@ -91,11 +91,12 @@ def print_output(*args):
 	sys.stderr.write("\x1b[2J\x1b[H")
 	print 'Muon Hunter datalogging\n'.center(72)
 	print '\nDatalogging started: {0}       Run ID = {1:d}  Detector serial: {2:d}\n'.format(start_time, int(runid), int(serial))
-	print '{0:9}{1:15}{2:16}{3:12}'.format('Signal','Total counts', 'Hits per min', 'Extrapolated')
-	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('GM1',gm1_total,gm1_per_min,gm1_ex_flag)
-	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('GM2',gm2_total,gm2_per_min,gm2_ex_flag)
-	print '{0:9}{1:15}{2:17}{3:12}'.format('Signal','Total counts', 'Hits per hour', 'Extrapolated')
-	print '{0:9}{1:12d}{2:15d} {3:12d}\n'.format('COSMIC',total_muons,muon_per_hour,muon_ex_flag)
+	print '{0:9}{1:15}'.format('Signal','Total counts')
+	print '{0:9}{1:12d}\n'.format('a_b_c_d',a_b_c_d_hits)
+	print '{0:9}{1:12d}\n'.format('ab_cd',ab_cd_hits)
+	print '{0:9}{1:12d}\n'.format('bc',bc_hits)
+	print '{0:9}{1:12d}\n'.format('ad',ad_hits)
+	print '{0:9}{1:12d}\n'.format('ad',ad_hits)
 	if t_h < 10:
 		if t_m < 10:
 			if t_s < 10:
@@ -141,15 +142,11 @@ if logging_time < 1:
 try:
 	while time() < start_time + logging_time:
 		data = read_i2c()
-		total_muons = data[1] + (data[2] << 8)
-		gm2_total = data[3] + (data[4] << 8) + (data[5] << 16) + (data[6] << 24)
-		gm1_total = data[7] + (data[8] << 8) + (data[9] << 16) + (data[10] << 24)
-		muon_per_hour = data[11] + (data[12] << 8)
-		muon_ex_flag = data[13]
-		gm2_per_min = data[14] + (data[15] << 8)
-		gm2_ex_flag = data[16]
-		gm1_per_min = data[17] + (data[18] << 8)
-		gm1_ex_flag = data[19]
+		a_b_c_d_hits = data[1] + (data[2] << 8)
+		ab_cd_hits = data[3] + (data[4] << 8)
+		bc_hits = data[5] + (data[6] << 8)
+		ad_hits = data[7] + (data[8] << 8)
+		ac_bd_hits = data[9] + (data[10] << 8)
 		serial = data[20]
 		t_s = data[21]
 		t_m = data[22]
@@ -158,16 +155,20 @@ try:
 	
 		BMP180.update()
 		
-		gm1_data = (runid, 'GM1', BMP180.PRESSURE, BMP180.TEMP, gm1_total, gm1_per_min, gm1_ex_flag, 0, '', t_d, t_h, t_m, t_s)
-		gm2_data = (runid, 'GM2', BMP180.PRESSURE, BMP180.TEMP, gm2_total, gm2_per_min, gm2_ex_flag, 0, '', t_d, t_h, t_m, t_s)
-		muon_data = (runid, 'Muon', BMP180.PRESSURE, BMP180.TEMP, total_muons, muon_per_hour, muon_ex_flag, 0, '', t_d, t_h, t_m, t_s)
-		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', gm1_data)
-		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', gm2_data)
-		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', muon_data)
+		a_b_c_d = (runid, 'a_b_c_d', BMP180.PRESSURE, BMP180.TEMP, a_b_c_d_hits, 0, 0, 0, '', t_d, t_h, t_m, t_s)
+		ab_cd = (runid, 'ab_cd', BMP180.PRESSURE, BMP180.TEMP, ab_cd_hits, 0, 0, 0, '', t_d, t_h, t_m, t_s)
+		bc = (runid, 'bc', BMP180.PRESSURE, BMP180.TEMP, bc_hits, 0, 0, 0, '', t_d, t_h, t_m, t_s)
+		ad = (runid, 'ad', BMP180.PRESSURE, BMP180.TEMP, ad_hits, 0, 0, 0, '', t_d, t_h, t_m, t_s)
+		ac_bd = (runid, 'bc', BMP180.PRESSURE, BMP180.TEMP, ac_bd_hits, 0, 0, 0, '', t_d, t_h, t_m, t_s)
+		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', a_b_c_d)
+		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', ab_cd)
+		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', bc)
+		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', ad)
+		c.execute('INSERT INTO run VALUES (?, ?, DateTime("now"), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', ac_bd)
 		conn.commit()
 		
-		print_output(total_muons, gm2_total, gm1_total, muon_per_hour,
-			muon_ex_flag, gm2_per_min, gm2_ex_flag, gm1_per_min, gm1_ex_flag, serial,
+		print_output(a_b_c_d_hits, ab_cd_hits, bc_hits, ad_hits,
+			ac_bd_hits, serial,
 			t_d, t_h, t_m, t_s)
 	
 		sleep(refresh_rate)
