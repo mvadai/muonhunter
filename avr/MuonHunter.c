@@ -85,7 +85,7 @@ ISR(TIMER0_OVF_vect)
 		if ( modes == 0x40 && timer_time == TIMER_OVF_M )
 		{
 			timer_update();
-			plateau_counter_update();
+			update_counter();
 		}
 	}
 	
@@ -184,9 +184,6 @@ void Initialize()
 	timer_min = 0;
 	timer_hour = 0;
 	timer_day = 0;
-	gm1_sum = 0;
-	gm2_sum = 0;
-	muon_sum = 0;
 	gm_LED_comp = 0;
 	muon_LED_comp = 0;
 	gm_buzz_comp = 0;
@@ -194,9 +191,6 @@ void Initialize()
 	AC_BD_hits = 0;
 	AD_hits = 0;
 	AB_CD_hits = 0;
-	AC_BD_total = 0;
-	AD_total = 0;
-	AB_CD_total = 0;
 	flash_gm1();
 	flash_gm2();
 	flash_muon();
@@ -239,7 +233,7 @@ void Initialize()
 	LcdUpdate();
 	
 	LcdGotoXYFont(1,1);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("AC or BD:"));
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("AC+BD:"));
 	LcdUpdate();
 	LcdGotoXYFont(10,1);
 	dtostrf((double)AC_BD_hits,5,0,str);
@@ -247,7 +241,7 @@ void Initialize()
 	LcdUpdate();
 	
 	LcdGotoXYFont(1,2);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("AB or CD:"));
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("AB+CD:"));
 	LcdUpdate();
 	LcdGotoXYFont(10,2);
 	dtostrf((double)AB_CD_hits,5,0,str);
@@ -271,7 +265,7 @@ void Initialize()
 	LcdUpdate();
 	
 	LcdGotoXYFont(1,5);
-	LcdFStr(FONT_1X,(unsigned char*)PSTR("A or B or C or D:"));
+	LcdFStr(FONT_1X,(unsigned char*)PSTR("A+B+C+D:"));
 	LcdUpdate();
 	LcdGotoXYFont(10,5);
 	dtostrf((double)BC_hits,5,0,str);
@@ -287,51 +281,7 @@ update_counter();
 void update_state()
 {
 	LcdGotoXYFont(3,1);
-	switch ( ((state & 0xC) >> 2) )
-	{
-		case 0x3 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("OFF"));
-		LcdUpdate();
-		break;
-		
-		case 0x2 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("LED"));
-		LcdUpdate();
-		break;
-		
-		case 0x1 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("ON "));
-		LcdUpdate();
-		break;
-		
-		case 0x0 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("OFF"));
-		LcdUpdate();
-		break;
-	}
 	LcdGotoXYFont(10,1);
-	switch ( (state & 0x3) )
-	{
-		case 0x3 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("MU GM"));
-		LcdUpdate();
-		break;
-		
-		case 0x2 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("GM   "));
-		LcdUpdate();
-		break;
-		
-		case 0x1 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("MU   "));
-		LcdUpdate();
-		break;
-		
-		case 0x0 :
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("OFF  "));
-		LcdUpdate();
-		break;
-	}
 }
 void update_counter()
 {
@@ -430,26 +380,7 @@ void change_clock(uint8_t mode)
 		TCCR0B = 0x4;
 		// counter overflow interrupt enabled
 		TIMSK0 = 0x1;
-		LcdClear();
-		LcdImage(st);
-		LcdUpdate();
 		update_state();
-		LcdGotoXYFont(2,2);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
-		LcdUpdate();
-		LcdGotoXYFont(10,2);
-		dtostrf((double)AB_CD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		LcdGotoXYFont(2,3);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" /hour:"));
-		LcdUpdate();
-		LcdGotoXYFont(1,4);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("GM1/min:"));
-		LcdUpdate();
-		LcdGotoXYFont(1,5);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("GM2/min:"));
-		LcdUpdate();
 		break;
 		case 0x1: // change to /sec mode
 		// timer clock set to clk / 8
@@ -459,26 +390,8 @@ void change_clock(uint8_t mode)
 		TCCR0B = 0x2;
 		// counter overflow interrupt enabled
 		TIMSK0 = 0x1;
-		LcdClear();
-		LcdImage(st);
-		LcdUpdate();
-		update_state();
-		LcdGotoXYFont(2,2);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" total:"));
-		LcdUpdate();
-		LcdGotoXYFont(10,2);
-		dtostrf((double)AB_CD_total,5,0,str);
-		LcdStr(FONT_1X, str);
-		LcdUpdate();
-		LcdGotoXYFont(2,3);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR(" /min:"));
-		LcdUpdate();
-		LcdGotoXYFont(1,4);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("GM1/sec:"));
-		LcdUpdate();
-		LcdGotoXYFont(1,5);
-		LcdFStr(FONT_1X,(unsigned char*)PSTR("GM2/sec:"));
-		LcdUpdate();
+				update_state();
+
 		break;
 	}
 }

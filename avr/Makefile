@@ -1,4 +1,6 @@
-# This is the Raspberry file Makefile
+# Delete the other Makefile and rename this file to Makefile 
+# when using the USBASP programmer on Ubuntu 
+# see http://www.muonhunter.com/blog/using-usbasp-to-program-the-muon-hunter
 MCU=atmega168
 AVRDUDEMCU=m168
 CC=/usr/bin/avr-gcc
@@ -12,18 +14,12 @@ all :
 	rm -f $(TARGET)
 
 install : all
-	sudo gpio -g mode 22 out
-	sudo gpio -g write 22 0
-	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 1000000 -U flash:w:$(TARGET).hex
-	sudo gpio -g write 22 1
+	sudo $(AVRDUDE) -c avrisp2 -p $(AVRDUDEMCU) -U flash:w:$(TARGET).hex
 noreset : all
-	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 100000 -U flash:w:$(TARGET).hex
+	sudo $(AVRDUDE) -c avrisp2 -p $(AVRDUDEMCU) -U flash:w:$(TARGET).hex
 
 fuse :
-	sudo gpio -g mode 22 out
-	sudo gpio -g write 22 0
-	sudo $(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi -b 10000 -U lfuse:w:0xde:m -U hfuse:w:0xde:m -U efuse:w:0x1:m
-	sudo gpio -g write 22 1
+	sudo $(AVRDUDE) -c avrisp2 -p $(AVRDUDEMCU) -U lfuse:w:0xde:m -U hfuse:w:0xde:m -U efuse:w:0x1:m
 
 clean :
 	rm -f *.hex *.obj *.o
