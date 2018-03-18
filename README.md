@@ -42,7 +42,7 @@ and pressure data, too. If the detection rate is higher or lower this
 has a direct effect on the data rates being higher or lower, too.
 
 ## Data storage
-The detections are stored in muonhunter.csv by default in 
+The detections are stored in ```muonhunter.csv``` by default in 
 the same directory as the script. The data is added to the file every
 5s by default you can change this in the script. New data is added to 
 the old, so if you wish to clear the data, just remove the file.
