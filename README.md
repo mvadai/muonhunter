@@ -26,7 +26,7 @@ nohup python datalogging.py&
 
 The data rate can be estimated with the following formula:
 
-$R \approx 2 \cdot CPM  \cdot 40 (bytes/minute)$
+![equation](http://latex.codecogs.com/gif.latex?%24%24R%20%5Capprox%202%20%5Ccdot%20CPM%20%5Ccdot%2040%20%5C%20%5C%20%5Cfrac%7Bbytes%7D%7Bminute%7D%24%24)
 
 The expected data rate using normal background radiation (CPM = 30)
 is about 140 kB/hour. This estimate includes the optional temperature 
