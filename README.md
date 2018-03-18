@@ -1,6 +1,6 @@
 # Muon Hunter simple python CSV RPI datalogger
 
-This script is for datalogging with the one board Muon Hunter
+This ```Python 2.7``` script is for datalogging with the one board Muon Hunter
 using a Raspberry Pi.
 
 Set up your Muon Hunter as explained here:
