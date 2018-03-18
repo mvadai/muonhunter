@@ -41,6 +41,13 @@ is about 160 kB/hour. This estimate includes the optional temperature
 and pressure data, too. If the detection rate is higher or lower this 
 has a direct effect on the data rates being higher or lower, too.
 
+For example, I get about onlt 85 kB/hour from my room, since the background
+hits are less. If in doubt, measure for an hour or so and then use the 
+formula to estimate the data rate at your location. This is only really relevant if you 
+plan to leave the detector for months and you're worried about 
+space on your SD with natural background. However, if you have artificial 
+sources then you can run out of space much quicker, of course.
+
 ## Data storage
 The detections are stored in ```muonhunter.csv``` by default in 
 the same directory as the script. The data is added to the file every
